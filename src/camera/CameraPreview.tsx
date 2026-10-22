@@ -1,11 +1,9 @@
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import ViroExperience from '../ar/ViroExperience';
 import type { Session } from '../navigation/session';
 import type { MarkerId } from '../data/catalog';
 export type CameraProps = { session: Session; onMarker: (id: MarkerId) => void };
-// The native Viro module must never be evaluated in Expo Go.
-const ViroExperience = lazy(() => import('../ar/ViroExperience'));
 class ARBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
@@ -15,11 +13,7 @@ class ARBoundary extends React.Component<{ children: React.ReactNode }, { failed
   }
 }
 export default function CameraPreview(props: CameraProps) {
-  if (Constants.executionEnvironment === ExecutionEnvironment.StoreClient) return <View style={styles.message}>
-    <Text style={styles.heading}>ViroReact exige o aplicativo Nexway</Text>
-    <Text style={styles.description}>O Expo Go não inclui o módulo de realidade aumentada. Instale o build de desenvolvimento gerado pelo Expo EAS. Neste cliente, use a demonstração por botões.</Text>
-  </View>;
-  return <ARBoundary><Suspense fallback={<View style={styles.message}><Text style={styles.description}>Iniciando ViroReact…</Text></View>}><ViroExperience {...props} /></Suspense></ARBoundary>;
+  return <ARBoundary><ViroExperience {...props} /></ARBoundary>;
 }
 const styles = StyleSheet.create({
   message: { padding: 20, gap: 12, borderWidth: 1, borderColor: '#d5dbd9', backgroundColor: '#ffffff', borderRadius: 4 },

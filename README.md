@@ -4,7 +4,7 @@ Localização de materiais com armazém virtual e realidade aumentada por **Viro
 
 ## iPhone sem Xcode local: Expo EAS
 
-ViroReact exige um aplicativo nativo próprio. **Expo Go não executa a cena AR.** O EAS compila o aplicativo na nuvem, dispensando Xcode neste Mac. Para instalar no iPhone físico, é necessário ter conta Expo, assinatura Apple Developer ativa e registrar o aparelho.
+O Nexway é executado como aplicativo nativo com ViroReact. O EAS compila o aplicativo na nuvem, dispensando Xcode neste Mac. Para instalar no iPhone físico, é necessário ter conta Expo, assinatura Apple Developer ativa e registrar o aparelho.
 
 Com Node 22 e npm, na pasta do projeto:
 
@@ -24,7 +24,7 @@ Instale o aplicativo pelo link fornecido ao final do build. Habilite o Modo de D
 npm start
 ```
 
-Mantenha Mac e iPhone na mesma rede e abra o projeto no **Nexway instalado**, pelo QR code/deep link do development client. Esse QR code não é para o Expo Go. Se a rede bloquear acesso entre os aparelhos, use `npm run start:tunnel`.
+Mantenha Mac e iPhone na mesma rede e abra o projeto no **Nexway instalado**, pelo QR code/deep link do development client. Se a rede bloquear acesso entre os aparelhos, use `npm run start:tunnel`.
 
 Neste Mac, se `npm` não estiver no PATH, use `./scripts/npm` no lugar de `npm`.
 

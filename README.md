@@ -1,54 +1,59 @@
 # Nexway
 
-MVP de orientação de materiais em armazém, baseado no plano NEXUS: buscar material → reconhecer START-01 → reconhecer estante → indicar setor/prateleira → confirmar retirada e registrar tempo.
+Aplicativo de localização de materiais com armazém virtual e câmera com indicação do destino. Executa no **Expo Go para iPhone e Android**, sem Xcode, Android Studio ou conta Apple Developer.
 
-React Native + TypeScript + Expo + ViroReact. A tela inicial oferece um armazém virtual com seleção de materiais, planta interativa, caminho pelos corredores, posição animada e vista frontal do setor/prateleira. A aba Câmera AR mantém o fluxo de checkpoints e métricas da base inicial.
+## Abrir no celular
 
-## Executar
-
-Node 22 (`nvm use`, se usar nvm) e npm. Neste Mac, o Node foi instalado em `~/.local/share/nexway`; use `./scripts/npm` no lugar de `npm`, por exemplo `./scripts/npm run web`. O script usa o Node do sistema nos demais ambientes.
-
-Com Node disponível no terminal:
+Instale a versão atual do Expo Go no celular. No projeto, com Node 22 e npm:
 
 ```sh
 npm ci
-npm run verify
-npm run web
+npm start
 ```
 
-A prévia web abre no **Armazém virtual**:
+Mantenha o computador e o celular na mesma rede Wi-Fi. No iPhone, leia o QR code do terminal com a Câmera e abra no Expo Go. Autorize acesso à rede local e à câmera quando solicitado.
 
-1. Escolha um material pelo nome/código ou toque em uma estante no mapa.
-2. Veja o destino destacado na planta e na vista frontal da estante.
+Neste Mac, o Node está em `~/.local/share/nexway`. Se `npm` não estiver no PATH, use `./scripts/npm start`.
+
+Se a rede bloquear a conexão entre os aparelhos, use `npm run start:tunnel`. O Expo pode solicitar a instalação do adaptador de túnel. O terminal deve permanecer aberto durante o uso.
+
+## Armazém virtual
+
+1. Escolha um material pelo nome/código ou toque em uma estante na planta.
+2. Confira a estante destacada e a vista frontal do setor/prateleira.
 3. Toque em **Simular percurso** para acompanhar a posição da entrada até o destino.
-4. Pause, continue ou volte à entrada. Trocar de material reinicia o percurso.
+4. Pause, continue ou volte à entrada. Trocar o material reinicia o percurso.
 
-A planta e os materiais são fictícios; a posição animada é uma simulação, sem localização real. O caminho é calculado em uma grade, evitando os espaços ocupados pelas estantes. A aba **Câmera AR** permite acessar o protótipo anterior, incluindo seus botões de simulação de marcadores.
+A planta e o catálogo são fictícios. O caminho é calculado em uma grade, evitando as estantes. A posição é simulada, sem localização real.
 
-Para realidade aumentada em Android físico compatível com ARCore:
+## Câmera
+
+No celular, a aba **Câmera** inicia no modo câmera. Selecione um material, toque em **Permitir câmera** e confira as informações do destino sobre a imagem ao vivo.
+
+Use **Confirmar ponto inicial (simulação)** e **Confirmar chegada (simulação)** para avançar no percurso. Depois confirme a retirada para registrar o tempo e compartilhar as métricas.
+
+**Usar demonstração** alterna para os botões de marcadores, inclusive para testar estantes incorretas. No navegador, a aba usa esses botões e orienta abrir o Expo Go para acessar a câmera.
+
+Este modo não reconhece marcadores automaticamente nem ancora objetos 3D no ambiente. O ViroReact não está no aplicativo atual, pois não é suportado pelo Expo Go. A implementação anterior está preservada no histórico Git até o commit `dbf37fa`.
+
+## Desenvolvimento
 
 ```sh
+npm run verify
 npm run doctor
-npm run prebuild
-npm run android
+npm run web
+npm run export:web
+npm run export:ios
 ```
 
-ViroReact exige build nativo; não funciona no Expo Go. Após instalar o aplicativo, `npm start` inicia o Metro para o development client.
+React Native + TypeScript + Expo SDK 58 + expo-camera. A geração do bundle iOS valida o JavaScript e não equivale a um teste no iPhone físico.
 
-Os marcadores imprimíveis estão em [assets/markers/print.html](assets/markers/print.html). Imprimir as imagens com 20 × 20 cm, sem ajuste automático de escala.
+- `src/data/catalog.ts`: catálogo e busca.
+- `src/warehouse/layout.ts`: planta fictícia e cálculo do caminho.
+- `src/components/WarehouseMap.tsx`: mapa e posição animada.
+- `src/screens/WarehouseSimulation.tsx`: seleção e simulação do armazém.
+- `src/screens/CameraExperience.tsx`: fluxo de câmera/demonstração e métricas.
+- `src/camera/CameraPreview.tsx`: permissão, câmera ao vivo e indicação do destino.
+- `src/navigation/session.ts`: ordem dos checkpoints, conclusão e métricas.
 
-## Estrutura
-
-- `src/data/catalog.ts`: materiais, estantes e busca.
-- `src/navigation/session.ts`: estados, ordem dos checkpoints e métricas.
-- `src/ar/`: câmera, targets e indicação textual ancorada.
-- `App.tsx`: alternância entre armazém virtual e câmera AR.
-- `src/screens/WarehouseSimulation.tsx`: seleção, reprodução do percurso e detalhe da prateleira.
-- `src/components/WarehouseMap.tsx`: planta interativa e posição animada.
-- `src/warehouse/layout.ts`: layout fictício e cálculo de caminho pelos corredores.
-- `src/screens/ARExperience.tsx`: fluxo anterior de busca, checkpoints e métricas.
-- `tests/`: regras do fluxo e busca.
-
-Consulte [desenvolvimento e validação](docs/DEVELOPMENT.md) para divisão de responsabilidades e testes físicos pendentes. O código WL04 e o layout real do armazém não foram fornecidos. A cena AR não foi validada em dispositivo; setas espaciais e highlight 3D preciso permanecem como próximos passos.
-
-Documentação técnica: [ViroReact + Expo](https://viro-community.readme.io/docs/integrating-with-expo) e [Expo](https://docs.expo.dev/).
+Consulte [o guia de desenvolvimento](docs/DEVELOPMENT.md) e o PDF original para o planejamento do projeto.

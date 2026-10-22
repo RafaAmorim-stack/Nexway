@@ -2,37 +2,38 @@ import React, { useState } from 'react';
 import { ScrollView, View, Text, TextInput, Pressable, StyleSheet, Share, Platform } from 'react-native';
 import { searchItems, markers, type MarkerId } from '../data/catalog';
 import { startSession, recognize, complete, metrics, type Session } from '../navigation/session';
-import ARView from '../ar/ARView';
-export default function ARExperience() {
+import CameraPreview from '../camera/CameraPreview';
+export default function CameraExperience() {
  const [query, setQuery] = useState('');
  const [session, setSession] = useState<Session | null>(null);
- const [simulation, setSimulation] = useState(true);
+ const [simulation, setSimulation] = useState(Platform.OS === 'web');
  const [notice, setNotice] = useState('');
  const onMarker = (id: MarkerId) => setSession(s => s ? recognize(s, id) : s);
  const button = (label: string, onPress: () => void, secondary = false) => <Pressable accessibilityRole="button" onPress={onPress} style={[styles.button, secondary && styles.secondary]}><Text style={[styles.buttonText, secondary && styles.secondaryText]}>{label}</Text></Pressable>;
  const location = session?.item.location;
  return <View style={styles.root}><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-  <View style={styles.intro}><Text style={styles.pageTitle}>Navegação por câmera</Text><Text style={styles.muted}>Selecione um material e reconheça os marcadores do percurso.</Text></View>
+  <View style={styles.intro}><Text style={styles.pageTitle}>Navegação por câmera</Text><Text style={styles.muted}>Consulte o destino pela câmera ou simule os pontos do percurso.</Text></View>
   {!session ? <>
    <Text style={styles.title}>Selecionar material</Text><Text style={styles.muted}>Catálogo de demonstração · 3 materiais</Text>
    <TextInput accessibilityLabel="Buscar material por código ou descrição" placeholder="Código ou descrição do material" placeholderTextColor="#7a858c" value={query} onChangeText={setQuery} style={styles.input} />
    {searchItems(query).map(item => <View key={item.code} style={styles.card}><Text style={styles.code}>{item.code}</Text><Text style={styles.heading}>{item.description}</Text><Text style={styles.muted}>{item.location.label} · Setor {item.location.sector} · Prateleira {item.location.shelf}</Text>{button('Selecionar e iniciar', () => {setSession(startSession(item));setNotice('');})}</View>)}
    {searchItems(query).length === 0 && <Text style={styles.muted}>Nenhum material encontrado. Tente outro código ou descrição.</Text>}
-   {button(simulation ? 'Ativar câmera AR' : 'Usar demonstração por marcadores', () => setSimulation(v => !v), true)}
-   <Text style={styles.muted}>{simulation ? 'Modo demonstração: reconhecimento por botões.' : 'Modo câmera: reconhecimento dos marcadores impressos.'} A câmera exige o aplicativo Android e um aparelho compatível com ARCore.</Text>
+   {button(simulation ? 'Ativar câmera' : 'Usar demonstração', () => setSimulation(v => !v), true)}
+   <Text style={styles.muted}>{simulation ? 'Demonstração por botões: simule a leitura dos pontos do percurso.' : 'Câmera no Expo Go: destino na tela e confirmação manual de posição.'}</Text>
   </> : <>
    <Text style={styles.code}>{session.item.code}</Text><Text style={styles.title}>{session.item.description}</Text>
    <View style={styles.card}><Text style={styles.heading}>{location?.label}</Text><Text style={styles.muted}>Setor {location?.sector} · Prateleira {location?.shelf}</Text></View>
-   <Text accessibilityLiveRegion="polite" style={styles.heading}>{session.phase === 'awaiting-start' ? '1 / 3 · Reconheça START-01' : session.phase === 'navigating' ? `2 / 3 · Procure ${location?.id}` : session.phase === 'arrived' ? '3 / 3 · Retire o material indicado' : 'Percurso concluído'}</Text>
+   <Text accessibilityLiveRegion="polite" style={styles.heading}>{session.phase === 'awaiting-start' ? '1 / 3 · Ponto inicial START-01' : session.phase === 'navigating' ? `2 / 3 · Destino ${location?.id}` : session.phase === 'arrived' ? '3 / 3 · Retire o material indicado' : 'Percurso concluído'}</Text>
+   {session.phase !== 'completed' && button(simulation ? 'Ativar câmera' : 'Usar demonstração', () => setSimulation(v => !v), true)}
    {session.error && <Text accessibilityRole="alert" style={styles.error}>{session.error}</Text>}
-   {session.phase !== 'completed' && (simulation ? <View style={styles.card}><Text style={styles.heading}>Reconhecimento de marcadores</Text><Text style={styles.muted}>Selecione o marcador para simular a leitura.</Text>{markers.map(id => <View key={id}>{button(id, () => onMarker(id), true)}</View>)}</View> : <ARView session={session} onMarker={onMarker} />)}
-   {session.phase === 'navigating' && <Text style={styles.muted}>Siga a sinalização física até {location?.label}. O posicionamento das estantes precisa ser calibrado para orientação espacial por setas.</Text>}
+   {session.phase !== 'completed' && (simulation ? <View style={styles.card}><Text style={styles.heading}>Reconhecimento de marcadores</Text><Text style={styles.muted}>Selecione o marcador para simular a leitura.</Text>{markers.map(id => <View key={id}>{button(id, () => onMarker(id), true)}</View>)}</View> : <CameraPreview session={session} onMarker={onMarker} />)}
+   {session.phase === 'navigating' && <Text style={styles.muted}>Destino: {location?.label}. Use o armazém virtual para consultar o percurso ilustrativo.</Text>}
    {session.phase === 'arrived' && <View style={styles.card}><Text style={styles.heading}>Setor {location?.sector} · Prateleira {location?.shelf}</Text>{button('Confirmar retirada e concluir', () => setSession(s => s ? complete(s) : s))}</View>}
    {session.phase === 'completed' && <View style={styles.card}><Text style={styles.heading}>Concluído em {Math.round((metrics(session).durationMs ?? 0) / 1000)} segundos</Text><Text style={styles.muted}>{metrics(session).errors} ocorrência(s) de marcador incorreto</Text>{button('Compartilhar métricas JSON', async () => {try {await Share.share({message: JSON.stringify(metrics(session), null, 2)});} catch {setNotice('Não foi possível compartilhar. Tente novamente.');}})}</View>}
    {!!notice && <Text style={styles.error}>{notice}</Text>}
    {button(session.phase === 'completed' ? 'Buscar outro material' : 'Cancelar percurso', () => setSession(null), true)}
   </>}
-  <Text style={styles.footer}>Ambiente de demonstração {Platform.OS === 'web' ? '· prévia web' : '· Android / AR'}</Text>
+  <Text style={styles.footer}>Ambiente de demonstração {Platform.OS === 'web' ? '· prévia web' : '· Expo Go'}</Text>
  </ScrollView></View>;
 }
 const styles = StyleSheet.create({

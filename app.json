@@ -4,7 +4,7 @@
     "slug": "nexway",
     "version": "0.1.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "android": {
       "package": "com.nexus.nexway",
       "permissions": [
@@ -12,10 +12,21 @@
       ]
     },
     "plugins": [
-      "@reactvision/react-viro"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Permita que o Nexway use a c\u00e2mera para visualizar o armaz\u00e9m.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": false
+        }
+      ]
     ],
     "web": {
       "bundler": "metro"
+    },
+    "ios": {
+      "bundleIdentifier": "com.nexus.nexway",
+      "supportsTablet": true
     }
   }
 }

@@ -43,3 +43,22 @@ A tela inicial agora simula uma planta com três estantes e entrada START. A sel
 Esta demonstração usa coordenadas fictícias e independe de câmera, marcadores e ARCore. As rotas virtuais não calibram a cena AR. O fluxo anterior está preservado em `src/screens/ARExperience.tsx`.
 
 Foram acrescentados testes para verificar que todos os materiais têm rotas contíguas, com início e fim corretos, sem atravessar estantes ou paredes.
+
+## Modo atual: Expo Go no iPhone e Android
+
+Por escolha do usuário, a execução principal passou a ser Expo Go com câmera e simulação. Esta seção substitui as instruções anteriores de build obrigatório com ViroReact. O projeto foi atualizado para o SDK 58, disponível no cliente Expo atual; ViroReact e expo-dev-client foram retirados das dependências. A implementação nativa anterior está preservada no Git até `dbf37fa`.
+
+`npm start` inicia `expo start --go`. A câmera usa expo-camera, com destino sobreposto e confirmação manual dos pontos do percurso. Não há reconhecimento de imagens nem posicionamento 3D. Os marcadores PNG existentes pertencem ao protótipo anterior e não são necessários neste modo.
+
+A área útil respeita o recorte e a barra do iPhone. A câmera é desmontada ao sair da aba e pausada ao entrar em segundo plano. Permissão negada permite usar a demonstração; quando o sistema não permite nova solicitação, o botão abre os ajustes do aplicativo.
+
+### Validação no iPhone
+
+1. Atualizar o Expo Go, conectar celular e computador à mesma rede, executar `npm start` e ler o QR code.
+2. Autorizar acesso à rede local. Abrir Armazém virtual e testar seleção, percurso e prateleira.
+3. Abrir Câmera, selecionar o material, permitir a câmera e verificar a indicação do destino sobre a imagem.
+4. Confirmar ponto inicial e chegada pelos botões identificados como simulação, concluir e compartilhar métricas.
+5. Negar a câmera e testar o modo demonstração. Conferir retomada após mudar permissões nos ajustes.
+6. Enviar o app para segundo plano e voltar, alternar abas e conferir que não existe mais de uma câmera ativa.
+
+A sessão continua em memória; fechar o aplicativo perde os resultados não compartilhados. Os testes físicos de câmera e permissões dependem do aparelho do usuário.

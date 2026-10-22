@@ -35,3 +35,11 @@ O baseline WL04 não foi fornecido e sua validação permanece pendente. O catá
 TypeScript, três testes automatizados de busca/estado, exportação web, geração nativa Android e 21 verificações do Expo Doctor passaram. A exportação JavaScript não equivale a gerar um APK nem comprova tracking em aparelho.
 
 `npm audit` identificou 16 entradas de severidade alta na árvore de dependências, derivadas de `braces` e `node-forge`, sem correção disponível no registro consultado. `npm audit fix` não as resolveu. Reavaliar atualizações compatíveis de Expo/ViroReact antes da distribuição.
+
+## Armazém virtual
+
+A tela inicial agora simula uma planta com três estantes e entrada START. A seleção de material destaca a estante, o setor e a prateleira correspondente. Uma busca em largura calcula um caminho percorrível na grade, respeitando os obstáculos. O indicador de posição avança automaticamente, com pausa, retomada e reinício. Trocar material reinicia a simulação.
+
+Esta demonstração usa coordenadas fictícias e independe de câmera, marcadores e ARCore. As rotas virtuais não calibram a cena AR. O fluxo anterior está preservado em `src/screens/ARExperience.tsx`.
+
+Foram acrescentados testes para verificar que todos os materiais têm rotas contíguas, com início e fim corretos, sem atravessar estantes ou paredes.

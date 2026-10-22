@@ -2,7 +2,7 @@
 
 MVP de orientação de materiais em armazém, baseado no plano NEXUS: buscar material → reconhecer START-01 → reconhecer estante → indicar setor/prateleira → confirmar retirada e registrar tempo.
 
-React Native + TypeScript + Expo + ViroReact, com catálogo demonstrativo, regras de checkpoint, registro de erros, exportação JSON e modo demonstração. A câmera usa marcadores de imagem e o fallback textual ancorado previsto no PDF.
+React Native + TypeScript + Expo + ViroReact. A tela inicial oferece um armazém virtual com seleção de materiais, planta interativa, caminho pelos corredores, posição animada e vista frontal do setor/prateleira. A aba Câmera AR mantém o fluxo de checkpoints e métricas da base inicial.
 
 ## Executar
 
@@ -16,7 +16,14 @@ npm run verify
 npm run web
 ```
 
-A prévia web abre em modo demonstração: selecione um material e toque nos marcadores para testar o fluxo, inclusive estantes incorretas.
+A prévia web abre no **Armazém virtual**:
+
+1. Escolha um material pelo nome/código ou toque em uma estante no mapa.
+2. Veja o destino destacado na planta e na vista frontal da estante.
+3. Toque em **Simular percurso** para acompanhar a posição da entrada até o destino.
+4. Pause, continue ou volte à entrada. Trocar de material reinicia o percurso.
+
+A planta e os materiais são fictícios; a posição animada é uma simulação, sem localização real. O caminho é calculado em uma grade, evitando os espaços ocupados pelas estantes. A aba **Câmera AR** permite acessar o protótipo anterior, incluindo seus botões de simulação de marcadores.
 
 Para realidade aumentada em Android físico compatível com ARCore:
 
@@ -35,7 +42,11 @@ Os marcadores imprimíveis estão em [assets/markers/print.html](assets/markers/
 - `src/data/catalog.ts`: materiais, estantes e busca.
 - `src/navigation/session.ts`: estados, ordem dos checkpoints e métricas.
 - `src/ar/`: câmera, targets e indicação textual ancorada.
-- `App.tsx`: busca, navegação, demonstração e conclusão.
+- `App.tsx`: alternância entre armazém virtual e câmera AR.
+- `src/screens/WarehouseSimulation.tsx`: seleção, reprodução do percurso e detalhe da prateleira.
+- `src/components/WarehouseMap.tsx`: planta interativa e posição animada.
+- `src/warehouse/layout.ts`: layout fictício e cálculo de caminho pelos corredores.
+- `src/screens/ARExperience.tsx`: fluxo anterior de busca, checkpoints e métricas.
 - `tests/`: regras do fluxo e busca.
 
 Consulte [desenvolvimento e validação](docs/DEVELOPMENT.md) para divisão de responsabilidades e testes físicos pendentes. O código WL04 e o layout real do armazém não foram fornecidos. A cena AR não foi validada em dispositivo; setas espaciais e highlight 3D preciso permanecem como próximos passos.

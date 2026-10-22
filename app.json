@@ -15,9 +15,17 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Permita que o Nexway use a c\u00e2mera para visualizar o armaz\u00e9m.",
+          "cameraPermission": "Permita que o Nexway use a c\u00e2mera para realidade aumentada.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": false
+        }
+      ],
+      [
+        "@reactvision/react-viro",
+        {
+          "ios": {
+            "cameraUsagePermission": "Permita que o Nexway use a c\u00e2mera para reconhecer estantes e indicar o destino."
+          }
         }
       ]
     ],
@@ -26,7 +34,12 @@
     },
     "ios": {
       "bundleIdentifier": "com.nexus.nexway",
-      "supportsTablet": true
-    }
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Permita que o Nexway use a c\u00e2mera para reconhecer estantes e indicar o destino.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "scheme": "nexway"
   }
 }

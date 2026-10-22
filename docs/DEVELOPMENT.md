@@ -62,3 +62,25 @@ A área útil respeita o recorte e a barra do iPhone. A câmera é desmontada ao
 6. Enviar o app para segundo plano e voltar, alternar abas e conferir que não existe mais de uma câmera ativa.
 
 A sessão continua em memória; fechar o aplicativo perde os resultados não compartilhados. Os testes físicos de câmera e permissões dependem do aparelho do usuário.
+
+## Modo atual: ViroReact com development client
+
+O usuário solicitou ViroReact novamente. Esta seção e o README atual substituem as instruções anteriores de execução da câmera dentro do Expo Go. O armazém virtual e o estilo visual permanecem disponíveis.
+
+ViroReact 3.0.3 declara suporte a Expo >=57 <58 e React Native >=0.86 <0.87. Por isso, o projeto retorna ao SDK 57 e RN 0.86.3, sem forçar versões fora da faixa suportada. expo-camera é usado somente para consultar/solicitar a permissão; a prévia e a cena 3D são renderizadas pelo ViroReact.
+
+- `src/camera/CameraPreview.tsx`: proteção contra Expo Go, carregamento da integração nativa e tratamento de erro de renderização.
+- `src/ar/ViroExperience.tsx`: permissão, ciclo de vida da câmera e ViroARSceneNavigator.
+- `src/ar/ARContext.ts`: estado da navegação compartilhado com a cena.
+- `src/ar/NavigationScene.tsx`: targets, eventos de anchors e texto ancorado.
+- `src/ar/markerSelection.ts`: prioridade do checkpoint esperado entre imagens visíveis.
+
+O fluxo real não oferece confirmação manual de START ou chegada. Os eventos de reconhecimento atualizam o estado. A confirmação de retirada permanece manual. O modo demonstração, explicitamente separado, mantém os botões de checkpoint.
+
+O EAS está configurado para build nativo em nuvem, com perfil development para dispositivo físico. Sem login Expo, o projeto não pode ser vinculado nem enviar o build. No iPhone são necessários registro do dispositivo, credenciais Apple Developer e Modo de Desenvolvedor. Não há IPA gerado nem validação física concluída nesta etapa.
+
+### Critérios de validação física
+
+Imprimir targets com 20 cm de largura; testar individualmente START e as três estantes. Testar reconhecimento simultâneo de START/estante, ordem incorreta, perda/retomada de tracking, baixa iluminação, retomada do app e permissões negadas. Conferir legibilidade e orientação do texto com o marcador na posição de uso. Os PNGs são candidatos de teste; sua qualidade de reconhecimento ainda não foi medida. Guardar vídeo e dados do aparelho.
+
+A planta virtual não define coordenadas de navegação no mundo real. Relocalização global, setas espaciais e geometria precisa de setor/prateleira precisam de layout e calibração física. O texto ancorado ao marker é a implementação atual de destaque.

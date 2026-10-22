@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, View, Text, TextInput, Pressable, StyleSheet, Share, Platform } from 'react-native';
 import { searchItems, markers, type MarkerId } from '../data/catalog';
 import { startSession, recognize, complete, metrics, type Session } from '../navigation/session';
@@ -8,23 +8,23 @@ export default function CameraExperience() {
  const [session, setSession] = useState<Session | null>(null);
  const [simulation, setSimulation] = useState(Platform.OS === 'web');
  const [notice, setNotice] = useState('');
- const onMarker = (id: MarkerId) => setSession(s => s ? recognize(s, id) : s);
+ const onMarker = useCallback((id: MarkerId) => setSession(s => s ? recognize(s, id) : s), []);
  const button = (label: string, onPress: () => void, secondary = false) => <Pressable accessibilityRole="button" onPress={onPress} style={[styles.button, secondary && styles.secondary]}><Text style={[styles.buttonText, secondary && styles.secondaryText]}>{label}</Text></Pressable>;
  const location = session?.item.location;
  return <View style={styles.root}><ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-  <View style={styles.intro}><Text style={styles.pageTitle}>Navegação por câmera</Text><Text style={styles.muted}>Consulte o destino pela câmera ou simule os pontos do percurso.</Text></View>
+  <View style={styles.intro}><Text style={styles.pageTitle}>Navegação por câmera</Text><Text style={styles.muted}>Reconheça os marcadores do percurso com realidade aumentada.</Text></View>
   {!session ? <>
    <Text style={styles.title}>Selecionar material</Text><Text style={styles.muted}>Catálogo de demonstração · 3 materiais</Text>
    <TextInput accessibilityLabel="Buscar material por código ou descrição" placeholder="Código ou descrição do material" placeholderTextColor="#7a858c" value={query} onChangeText={setQuery} style={styles.input} />
    {searchItems(query).map(item => <View key={item.code} style={styles.card}><Text style={styles.code}>{item.code}</Text><Text style={styles.heading}>{item.description}</Text><Text style={styles.muted}>{item.location.label} · Setor {item.location.sector} · Prateleira {item.location.shelf}</Text>{button('Selecionar e iniciar', () => {setSession(startSession(item));setNotice('');})}</View>)}
    {searchItems(query).length === 0 && <Text style={styles.muted}>Nenhum material encontrado. Tente outro código ou descrição.</Text>}
-   {button(simulation ? 'Ativar câmera' : 'Usar demonstração', () => setSimulation(v => !v), true)}
-   <Text style={styles.muted}>{simulation ? 'Demonstração por botões: simule a leitura dos pontos do percurso.' : 'Câmera no Expo Go: destino na tela e confirmação manual de posição.'}</Text>
+   {button(simulation ? 'Ativar câmera AR' : 'Usar demonstração', () => setSimulation(v => !v), true)}
+   <Text style={styles.muted}>{simulation ? 'Demonstração por botões: simule a leitura dos pontos do percurso.' : 'ViroReact: reconhecimento de imagens e indicação ancorada ao marcador.'}</Text>
   </> : <>
    <Text style={styles.code}>{session.item.code}</Text><Text style={styles.title}>{session.item.description}</Text>
    <View style={styles.card}><Text style={styles.heading}>{location?.label}</Text><Text style={styles.muted}>Setor {location?.sector} · Prateleira {location?.shelf}</Text></View>
-   <Text accessibilityLiveRegion="polite" style={styles.heading}>{session.phase === 'awaiting-start' ? '1 / 3 · Ponto inicial START-01' : session.phase === 'navigating' ? `2 / 3 · Destino ${location?.id}` : session.phase === 'arrived' ? '3 / 3 · Retire o material indicado' : 'Percurso concluído'}</Text>
-   {session.phase !== 'completed' && button(simulation ? 'Ativar câmera' : 'Usar demonstração', () => setSimulation(v => !v), true)}
+   <Text accessibilityLiveRegion="polite" style={styles.heading}>{session.phase === 'awaiting-start' ? '1 / 3 · Reconheça START-01' : session.phase === 'navigating' ? `2 / 3 · Destino ${location?.id}` : session.phase === 'arrived' ? '3 / 3 · Retire o material indicado' : 'Percurso concluído'}</Text>
+   {session.phase !== 'completed' && button(simulation ? 'Ativar câmera AR' : 'Usar demonstração', () => setSimulation(v => !v), true)}
    {session.error && <Text accessibilityRole="alert" style={styles.error}>{session.error}</Text>}
    {session.phase !== 'completed' && (simulation ? <View style={styles.card}><Text style={styles.heading}>Reconhecimento de marcadores</Text><Text style={styles.muted}>Selecione o marcador para simular a leitura.</Text>{markers.map(id => <View key={id}>{button(id, () => onMarker(id), true)}</View>)}</View> : <CameraPreview session={session} onMarker={onMarker} />)}
    {session.phase === 'navigating' && <Text style={styles.muted}>Destino: {location?.label}. Use o armazém virtual para consultar o percurso ilustrativo.</Text>}
@@ -33,7 +33,7 @@ export default function CameraExperience() {
    {!!notice && <Text style={styles.error}>{notice}</Text>}
    {button(session.phase === 'completed' ? 'Buscar outro material' : 'Cancelar percurso', () => setSession(null), true)}
   </>}
-  <Text style={styles.footer}>Ambiente de demonstração {Platform.OS === 'web' ? '· prévia web' : '· Expo Go'}</Text>
+  <Text style={styles.footer}>Ambiente de demonstração {Platform.OS === 'web' ? '· prévia web' : '· ViroReact'}</Text>
  </ScrollView></View>;
 }
 const styles = StyleSheet.create({

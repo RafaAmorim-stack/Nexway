@@ -10,7 +10,7 @@ export default function App() {
   return <SafeAreaProvider><SafeAreaView style={styles.root}>
     <StatusBar style="dark" />
     <View style={styles.header}><Text style={styles.brand}>Nexway<Text style={styles.brandSub}>  /  Operações</Text></Text><View style={styles.tabs}>
-      {([{ id: 'warehouse', label: 'Armazém virtual' }, { id: 'ar', label: 'Câmera' }] as const).map(tab => <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: mode === tab.id }} onPress={() => setMode(tab.id)} style={[styles.tab, mode === tab.id && styles.activeTab]}><Text style={[styles.tabText, mode === tab.id && styles.activeText]}>{tab.label}</Text></Pressable>)}
+      {([{ id: 'warehouse', label: 'Armazém virtual' }, { id: 'ar', label: 'Câmera AR' }] as const).map(tab => <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: mode === tab.id }} onPress={() => setMode(tab.id)} style={[styles.tab, mode === tab.id && styles.activeTab]}><Text style={[styles.tabText, mode === tab.id && styles.activeText]}>{tab.label}</Text></Pressable>)}
     </View></View>
     {mode === 'warehouse' ? <WarehouseSimulation /> : <CameraExperience />}
   </SafeAreaView></SafeAreaProvider>;

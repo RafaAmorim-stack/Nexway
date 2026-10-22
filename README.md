@@ -1,59 +1,67 @@
 # Nexway
 
-Aplicativo de localização de materiais com armazém virtual e câmera com indicação do destino. Executa no **Expo Go para iPhone e Android**, sem Xcode, Android Studio ou conta Apple Developer.
+Localização de materiais com armazém virtual e realidade aumentada por **ViroReact**. React Native + TypeScript + Expo SDK 57, compatível com ViroReact 3.0.3. A interface mantém o padrão visual claro das duas abas.
 
-## Abrir no celular
+## iPhone sem Xcode local: Expo EAS
 
-Instale a versão atual do Expo Go no celular. No projeto, com Node 22 e npm:
+ViroReact exige um aplicativo nativo próprio. **Expo Go não executa a cena AR.** O EAS compila o aplicativo na nuvem, dispensando Xcode neste Mac. Para instalar no iPhone físico, é necessário ter conta Expo, assinatura Apple Developer ativa e registrar o aparelho.
+
+Com Node 22 e npm, na pasta do projeto:
 
 ```sh
 npm ci
+npx eas-cli@latest login
+npx eas-cli@latest init
+npx eas-cli@latest device:create
+npm run build:ios
+```
+
+No `init`, selecione a conta/projeto Expo correto. O comando grava o identificador do projeto na configuração. No registro do dispositivo, abra o link fornecido no iPhone. Durante o build, siga a configuração de assinatura da Apple pelo EAS; não compartilhe senhas ou códigos de verificação no chat.
+
+Instale o aplicativo pelo link fornecido ao final do build. Habilite o Modo de Desenvolvedor no iPhone quando necessário. Depois execute:
+
+```sh
 npm start
 ```
 
-Mantenha o computador e o celular na mesma rede Wi-Fi. No iPhone, leia o QR code do terminal com a Câmera e abra no Expo Go. Autorize acesso à rede local e à câmera quando solicitado.
+Mantenha Mac e iPhone na mesma rede e abra o projeto no **Nexway instalado**, pelo QR code/deep link do development client. Esse QR code não é para o Expo Go. Se a rede bloquear acesso entre os aparelhos, use `npm run start:tunnel`.
 
-Neste Mac, o Node está em `~/.local/share/nexway`. Se `npm` não estiver no PATH, use `./scripts/npm start`.
+Neste Mac, se `npm` não estiver no PATH, use `./scripts/npm` no lugar de `npm`.
 
-Se a rede bloquear a conexão entre os aparelhos, use `npm run start:tunnel`. O Expo pode solicitar a instalação do adaptador de túnel. O terminal deve permanecer aberto durante o uso.
+Para Android, `npm run build:android` gera um APK de desenvolvimento pelo EAS. Alterações em bibliotecas nativas ou plugins exigem novo build; alterações de interface e regras TypeScript usam o Metro normalmente.
 
-## Armazém virtual
+## Como usar a câmera AR
 
-1. Escolha um material pelo nome/código ou toque em uma estante na planta.
-2. Confira a estante destacada e a vista frontal do setor/prateleira.
-3. Toque em **Simular percurso** para acompanhar a posição da entrada até o destino.
-4. Pause, continue ou volte à entrada. Trocar o material reinicia o percurso.
+1. Abra **Câmera AR**, selecione um material e permita o acesso à câmera.
+2. Reconheça a imagem do marcador **START-01**.
+3. Siga a identificação física até a estante e reconheça o marcador esperado, como **RACK-A**.
+4. Confira o setor/prateleira indicado no texto ancorado ao marcador e confirme a retirada.
+5. Compartilhe as métricas, se necessário.
 
-A planta e o catálogo são fictícios. O caminho é calculado em uma grade, evitando as estantes. A posição é simulada, sem localização real.
+Imprima [os marcadores](assets/markers/print.html) em tamanho real, com a imagem medindo **20 × 20 cm**. Eles são alvos de reconhecimento de imagem, não QR codes.
 
-## Câmera
+A cena trata detecção, atualização e remoção de anchors. Se START e uma estante já estiverem visíveis, o estado prioriza o checkpoint esperado. A indicação virtual é ocultada quando o marcador deixa de ser rastreado (incluindo a pose antiga reportada pelo ARCore).
 
-No celular, a aba **Câmera** inicia no modo câmera. Selecione um material, toque em **Permitir câmera** e confira as informações do destino sobre a imagem ao vivo.
+Os marcadores e a estabilidade do texto ancorado ainda precisam de validação no aparelho. O catálogo é fictício. Não há calibração do layout real nem seta espacial até a estante; o caminho da planta continua sendo uma simulação independente. O destaque atual é textual, e não uma delimitação 3D precisa da prateleira.
 
-Use **Confirmar ponto inicial (simulação)** e **Confirmar chegada (simulação)** para avançar no percurso. Depois confirme a retirada para registrar o tempo e compartilhar as métricas.
+## Demonstração e armazém virtual
 
-**Usar demonstração** alterna para os botões de marcadores, inclusive para testar estantes incorretas. No navegador, a aba usa esses botões e orienta abrir o Expo Go para acessar a câmera.
+```sh
+npm run web
+```
 
-Este modo não reconhece marcadores automaticamente nem ancora objetos 3D no ambiente. O ViroReact não está no aplicativo atual, pois não é suportado pelo Expo Go. A implementação anterior está preservada no histórico Git até o commit `dbf37fa`.
+Escolha o material e use **Simular percurso** para acompanhar o caminho na planta. Na aba Câmera AR, o navegador oferece **Usar demonstração**, com botões START/RACK para validar a ordem e erros de estante. Essa demonstração permanece disponível também no aplicativo nativo.
 
-## Desenvolvimento
+## Verificação
 
 ```sh
 npm run verify
 npm run doctor
-npm run web
 npm run export:web
 npm run export:ios
+npm run export:android
 ```
 
-React Native + TypeScript + Expo SDK 58 + expo-camera. A geração do bundle iOS valida o JavaScript e não equivale a um teste no iPhone físico.
+Exportar o bundle não equivale a compilar um IPA/APK nem a validar o rastreamento em dispositivo físico. O perfil `development` está em `eas.json`; os diretórios nativos gerados localmente são excluídos do upload por `.easignore`, para o EAS gerar projetos com a configuração atual.
 
-- `src/data/catalog.ts`: catálogo e busca.
-- `src/warehouse/layout.ts`: planta fictícia e cálculo do caminho.
-- `src/components/WarehouseMap.tsx`: mapa e posição animada.
-- `src/screens/WarehouseSimulation.tsx`: seleção e simulação do armazém.
-- `src/screens/CameraExperience.tsx`: fluxo de câmera/demonstração e métricas.
-- `src/camera/CameraPreview.tsx`: permissão, câmera ao vivo e indicação do destino.
-- `src/navigation/session.ts`: ordem dos checkpoints, conclusão e métricas.
-
-Consulte [o guia de desenvolvimento](docs/DEVELOPMENT.md) e o PDF original para o planejamento do projeto.
+A geração na nuvem ainda depende do login e da vinculação do projeto à conta Expo. Consulte [desenvolvimento](docs/DEVELOPMENT.md), [ViroReact + Expo](https://viro-community.readme.io/docs/integrating-with-expo) e [EAS para iPhone](https://docs.expo.dev/tutorial/eas/ios-development-build-for-devices/).

@@ -19,4 +19,9 @@ export default function ARView({ session, onMarker }: ARProps) {
  if (!allowed) return <View style={styles.container}><Text style={styles.caption}>{error || 'Solicitando acesso à câmera…'}</Text><Pressable accessibilityRole="button" onPress={requestCamera}><Text style={styles.caption}>Solicitar acesso novamente</Text></Pressable></View>;
  return <View style={styles.container}><ViroARSceneNavigator style={styles.camera} initialScene={{scene: NavigationScene}} viroAppProps={{ session, onMarker, onError: setError }} autofocus />{!!error && <Text style={styles.error}>{error}</Text>}<Text style={styles.caption}>Aponte para o marcador impresso. Mantenha boa iluminação.</Text></View>;
 }
-const styles = StyleSheet.create({container:{height:420,borderRadius:16,overflow:'hidden'},camera:{flex:1},caption:{color:'#fff',backgroundColor:'#17283c',padding:12},error:{color:'#ffb0a4',backgroundColor:'#42252a',padding:12}});
+const styles = StyleSheet.create({
+ container: { height: 420, borderRadius: 4, overflow: 'hidden', backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#d5dbd9' },
+ camera: { flex: 1 },
+ caption: { color: '#4a5f6b', fontSize: 12, lineHeight: 19, backgroundColor: '#ffffff', padding: 12 },
+ error: { color: '#88402d', fontSize: 13, lineHeight: 20, backgroundColor: '#faf0eb', padding: 12 },
+});

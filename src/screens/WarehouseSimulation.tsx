@@ -32,28 +32,28 @@ export default function WarehouseSimulation() {
   const arrived = playback === 'arrived';
   const progress = route.length > 1 ? step / (route.length - 1) : 0;
   return <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-    <View style={styles.intro}><Text style={styles.eyebrow}>EXPLORAR O ARMAZÉM</Text><Text style={styles.title}>Escolha o material. Veja onde encontrar.</Text><Text style={styles.description}>Um armazém virtual para visualizar o destino e acompanhar o caminho até a estante.</Text></View>
+    <View style={styles.intro}><View style={styles.sectionHead}><Text style={styles.title}>Localização de materiais</Text><Text style={styles.environment}>Ambiente de simulação</Text></View><Text style={styles.description}>Consulte a posição do material e simule o percurso até a estante.</Text></View>
     <View style={[styles.layout, wide && styles.wide]}>
       <View style={[styles.catalog, wide && styles.catalogWide]}>
         <View style={styles.sectionHead}><Text style={styles.heading}>Materiais</Text><Text style={styles.count}>{items.length} disponíveis</Text></View>
-        <TextInput accessibilityLabel="Buscar material" style={styles.input} placeholder="Buscar por nome ou código" placeholderTextColor="#7993a7" value={query} onChangeText={setQuery} />
+        <TextInput accessibilityLabel="Buscar material" style={styles.input} placeholder="Buscar por nome ou código" placeholderTextColor="#7a858c" value={query} onChangeText={setQuery} />
         <View style={styles.itemList}>
           {results.map(item => {
             const active = item.code === selected.code;
             return <Pressable key={item.code} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={`Selecionar ${item.description}`} onPress={() => select(item)} style={[styles.item, active && styles.selectedItem]}>
-              <Text style={styles.code}>{item.code} {active ? ' · SELECIONADO' : ''}</Text><Text style={styles.itemName}>{item.description}</Text>
+              <Text style={styles.code}>{item.code}{active ? '  /  Selecionado' : ''}</Text><Text style={styles.itemName}>{item.description}</Text>
               <Text style={styles.small}>{item.location.label} · Setor {item.location.sector} · P{item.location.shelf}</Text>
             </Pressable>;
           })}
           {results.length === 0 && <Text style={styles.description}>Nenhum material encontrado. Tente outro nome ou código.</Text>}
         </View>
-        <View style={styles.note}><Text style={styles.small}>Ambiente de demonstração: materiais e posições fictícios. Você também pode tocar nas estantes do mapa para trocar o destino.</Text></View>
+        <View style={styles.note}><Text style={styles.small}>Dados ilustrativos. Selecione um material na lista ou uma estante na planta.</Text></View>
       </View>
       <View style={styles.workspace}>
-        <View style={styles.destinationHeader}><View style={styles.destinationCopy}><Text style={styles.eyebrow}>MATERIAL SELECIONADO</Text><Text style={styles.materialTitle}>{selected.description}</Text></View><View style={styles.badge}><Text style={styles.badgeText}>{selected.location.id}</Text></View></View>
+        <View style={styles.destinationHeader}><View style={styles.destinationCopy}><Text style={styles.eyebrow}>Destino</Text><Text style={styles.materialTitle}>{selected.description}</Text></View><View style={styles.badge}><Text style={styles.badgeText}>{selected.location.id}</Text></View></View>
         <WarehouseMap item={selected} route={route} step={step} onSelectRack={selectRack} />
         <View style={styles.controls}>
-          <View accessibilityLiveRegion="polite" style={styles.instruction}><Text style={styles.heading}>{arrived ? 'Você chegou ao destino!' : playback === 'ready' ? 'Tudo pronto para começar' : playback === 'paused' ? 'Simulação pausada' : 'Percurso em andamento'}</Text><Text style={styles.description}>{playback === 'ready' ? `Saída pela entrada START. Destino: ${selected.location.label}.` : instructionAt(route, step, selected)}</Text></View>
+          <View accessibilityLiveRegion="polite" style={styles.instruction}><Text style={styles.heading}>{arrived ? 'Destino alcançado' : playback === 'ready' ? 'Aguardando início' : playback === 'paused' ? 'Simulação pausada' : 'Percurso em andamento'}</Text><Text style={styles.description}>{playback === 'ready' ? `Saída pela entrada START. Destino: ${selected.location.label}.` : instructionAt(route, step, selected)}</Text></View>
           <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${progress * 100}%` }]} /></View>
           <View style={styles.actions}><Pressable accessibilityRole="button" onPress={() => {
             if (playback === 'running') setPlayback('paused');
@@ -63,13 +63,13 @@ export default function WarehouseSimulation() {
           <Pressable accessibilityRole="button" onPress={() => { setStep(0); setPlayback('ready'); }} style={styles.secondary}><Text style={styles.secondaryText}>Voltar à entrada</Text></Pressable><Text style={styles.small}>{Math.round(progress * 100)}% do caminho</Text></View>
         </View>
         <View style={[styles.detail, arrived && styles.arrivedDetail]}>
-          <View style={styles.sectionHead}><Text style={styles.heading}>Onde está o material?</Text><Text style={styles.code}>{selected.location.label}</Text></View>
-          <Text style={styles.description}>Vista frontal da estante · o compartimento destacado contém o material selecionado.</Text>
+          <View style={styles.sectionHead}><Text style={styles.heading}>Posição na estante</Text><Text style={styles.code}>{selected.location.label}</Text></View>
+          <Text style={styles.description}>Vista frontal. Compartimento do material em destaque.</Text>
           <View style={styles.shelfGrid}>
             <View style={styles.shelfRow}><Text style={styles.levelLabel}>NÍVEL</Text>{['01', '02', '03'].map(sector => <Text key={sector} style={styles.sectorLabel}>SETOR {sector}</Text>)}</View>
             {[3, 2, 1].map(level => <View key={level} style={styles.shelfRow}><Text style={styles.levelLabel}>P{level}</Text>{['01', '02', '03'].map(sector => {
               const target = selected.location.sector === sector && selected.location.shelf === level;
-              return <View key={sector} accessible accessibilityLabel={`Setor ${sector}, prateleira ${level}${target ? `: ${selected.description}` : ''}`} style={[styles.compartment, target && styles.targetCompartment]}><Text style={[styles.box, target && styles.targetBox]}>{target ? '◆' : '▣'}</Text><Text style={[styles.compartmentText, target && styles.targetText]}>{target ? selected.code : 'Estoque'}</Text></View>;
+              return <View key={sector} accessible accessibilityLabel={`Setor ${sector}, prateleira ${level}${target ? `: ${selected.description}` : ''}`} style={[styles.compartment, target && styles.targetCompartment]}><View style={[styles.box, target && styles.targetBox]}><View style={[styles.boxSeam, target && styles.targetSeam]} /></View><Text style={[styles.compartmentText, target && styles.targetText]}>{target ? selected.code : '—'}</Text></View>;
             })}</View>)}
           </View>
           <Text style={styles.locationSummary}>{selected.location.label} → Setor {selected.location.sector} → Prateleira {selected.location.shelf}</Text>
@@ -79,18 +79,34 @@ export default function WarehouseSimulation() {
   </ScrollView>;
 }
 const styles = StyleSheet.create({
-  page: { padding: 20, gap: 28, maxWidth: 1180, width: '100%', alignSelf: 'center', paddingBottom: 50 }, intro: { gap: 10, paddingTop: 14 },
-  eyebrow: { color: '#60dfbf', fontSize: 10, letterSpacing: 2, fontWeight: '800' }, title: { color: '#f0f7fa', fontSize: 30, fontWeight: '800', maxWidth: 600 },
-  description: { color: '#9cb1c2', lineHeight: 21, fontSize: 13 }, layout: { gap: 24 }, wide: { flexDirection: 'row', alignItems: 'flex-start' },
-  catalog: { gap: 14 }, catalogWide: { width: 280 }, workspace: { flex: 1, gap: 18, minWidth: 0 }, sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
-  heading: { color: '#ecf5fc', fontSize: 16, fontWeight: '700' }, count: { color: '#8ca8bc', fontSize: 11 },
-  input: { color: '#f1f7fc', backgroundColor: '#122234', borderWidth: 1, borderColor: '#2b4255', padding: 14, borderRadius: 10, fontSize: 13 },
-  itemList: { gap: 10 }, item: { gap: 8, borderWidth: 1, borderColor: '#243a4b', padding: 16, borderRadius: 12, backgroundColor: '#102031' }, selectedItem: { borderColor: '#58d6b7', backgroundColor: '#14362f' },
-  code: { color: '#73e0c5', fontSize: 10, fontWeight: '700', letterSpacing: 0.8 }, itemName: { color: '#eff7fb', fontSize: 15, fontWeight: '600' }, small: { color: '#96b0c2', fontSize: 11, lineHeight: 18 },
-  note: { padding: 14, borderRadius: 10, backgroundColor: '#0e1b29' }, destinationHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }, destinationCopy: { gap: 7, flexShrink: 1 }, materialTitle: { color: '#f1f8fc', fontSize: 21, fontWeight: '700' },
-  badge: { backgroundColor: '#173c35', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 7 }, badgeText: { color: '#7deaca', fontWeight: '800', fontSize: 12 },
-  controls: { padding: 18, backgroundColor: '#102031', borderRadius: 14, gap: 16, borderWidth: 1, borderColor: '#254052' }, instruction: { gap: 7 }, progressTrack: { height: 5, backgroundColor: '#223e4e', borderRadius: 3, overflow: 'hidden' }, progressFill: { height: '100%', backgroundColor: '#63e3bf' },
-  actions: { flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' }, primary: { backgroundColor: '#62e4bf', paddingHorizontal: 18, paddingVertical: 13, borderRadius: 9 }, primaryText: { color: '#08271e', fontSize: 12, fontWeight: '800' }, secondary: { borderWidth: 1, borderColor: '#375365', paddingHorizontal: 14, paddingVertical: 12, borderRadius: 9 }, secondaryText: { color: '#c8dce7', fontSize: 12, fontWeight: '600' },
-  detail: { borderWidth: 1, borderColor: '#254052', backgroundColor: '#102031', borderRadius: 14, padding: 18, gap: 14 }, arrivedDetail: { borderColor: '#62e4bf' }, shelfGrid: { gap: 7 }, shelfRow: { flexDirection: 'row', gap: 7, alignItems: 'center' }, levelLabel: { width: 36, color: '#879eaf', fontSize: 9, fontWeight: '700' }, sectorLabel: { flex: 1, color: '#93b1c2', fontSize: 9, textAlign: 'center', paddingBottom: 4 },
-  compartment: { flex: 1, backgroundColor: '#1b3042', minHeight: 62, borderRadius: 6, borderBottomWidth: 4, borderColor: '#395267', alignItems: 'center', justifyContent: 'center', gap: 2 }, targetCompartment: { backgroundColor: '#22614e', borderColor: '#91ffd7' }, box: { color: '#7c96aa', fontSize: 24 }, targetBox: { color: '#9fffd8' }, compartmentText: { color: '#90a7b9', fontSize: 9 }, targetText: { color: '#c9ffe8', fontWeight: '800' }, locationSummary: { color: '#96eed1', fontSize: 12, fontWeight: '600' },
+  page: { padding: 24, gap: 24, maxWidth: 1200, width: '100%', alignSelf: 'center', paddingBottom: 40 },
+  intro: { gap: 8, paddingTop: 8, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: '#dadeda' },
+  environment: { color: '#707a80', fontSize: 11, paddingVertical: 5, paddingHorizontal: 8, borderWidth: 1, borderColor: '#d6dbd7', borderRadius: 3 },
+  eyebrow: { color: '#69747b', fontSize: 12 }, title: { color: '#202b33', fontSize: 24, fontWeight: '600', letterSpacing: -0.5 },
+  description: { color: '#637078', lineHeight: 20, fontSize: 13 }, layout: { gap: 28 }, wide: { flexDirection: 'row', alignItems: 'flex-start' },
+  catalog: { gap: 16 }, catalogWide: { width: 270 }, workspace: { flex: 1, gap: 16, minWidth: 0 },
+  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  heading: { color: '#27353f', fontSize: 14, fontWeight: '600' }, count: { color: '#6a767d', fontSize: 11 },
+  input: { color: '#24343f', backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#cdd4d5', paddingHorizontal: 12, paddingVertical: 11, borderRadius: 3, fontSize: 13 },
+  itemList: { borderTopWidth: 1, borderTopColor: '#d5dbd9' },
+  item: { gap: 7, borderBottomWidth: 1, borderBottomColor: '#d5dbd9', borderLeftWidth: 3, borderLeftColor: 'transparent', paddingVertical: 16, paddingHorizontal: 12 },
+  selectedItem: { borderLeftColor: '#294b61', backgroundColor: '#e7edef' },
+  code: { color: '#516570', fontSize: 11, fontWeight: '500' }, itemName: { color: '#24343f', fontSize: 14, fontWeight: '500' }, small: { color: '#69777e', fontSize: 11, lineHeight: 18 },
+  note: { paddingTop: 2, paddingHorizontal: 2 }, destinationHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' },
+  destinationCopy: { gap: 5, flexShrink: 1 }, materialTitle: { color: '#24343f', fontSize: 18, fontWeight: '600' },
+  badge: { backgroundColor: '#edf0ee', paddingHorizontal: 10, paddingVertical: 7, borderWidth: 1, borderColor: '#d5dbd8', borderRadius: 3 }, badgeText: { color: '#465a66', fontWeight: '500', fontSize: 11 },
+  controls: { padding: 16, backgroundColor: '#ffffff', borderRadius: 4, gap: 14, borderWidth: 1, borderColor: '#d5dbd9' }, instruction: { gap: 5 },
+  progressTrack: { height: 3, backgroundColor: '#e1e6e6', overflow: 'hidden' }, progressFill: { height: '100%', backgroundColor: '#36586d' },
+  actions: { flexDirection: 'row', alignItems: 'center', gap: 12, flexWrap: 'wrap' },
+  primary: { backgroundColor: '#29485c', paddingHorizontal: 16, paddingVertical: 11, borderRadius: 3 }, primaryText: { color: '#ffffff', fontSize: 12, fontWeight: '600' },
+  secondary: { borderWidth: 1, borderColor: '#cdd5d6', backgroundColor: '#ffffff', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 3 }, secondaryText: { color: '#3e535f', fontSize: 12, fontWeight: '500' },
+  detail: { borderWidth: 1, borderColor: '#d5dbd9', backgroundColor: '#ffffff', borderRadius: 4, padding: 16, gap: 14 }, arrivedDetail: { borderColor: '#8da393' },
+  shelfGrid: { gap: 6 }, shelfRow: { flexDirection: 'row', gap: 6, alignItems: 'center' }, levelLabel: { width: 34, color: '#63737b', fontSize: 10, fontWeight: '500' },
+  sectorLabel: { flex: 1, color: '#63737b', fontSize: 10, textAlign: 'center', paddingBottom: 4 },
+  compartment: { flex: 1, backgroundColor: '#f0f2ef', minHeight: 58, borderWidth: 1, borderBottomWidth: 3, borderColor: '#cbd2cf', alignItems: 'center', justifyContent: 'center', gap: 5 },
+  targetCompartment: { backgroundColor: '#f9eed8', borderColor: '#ba8a37' },
+  box: { width: 24, height: 18, borderWidth: 1, borderColor: '#aeb9b5', backgroundColor: '#dde2de', alignItems: 'center' },
+  boxSeam: { width: 4, height: '100%', backgroundColor: '#c7cfca' }, targetBox: { borderColor: '#a17b37', backgroundColor: '#d4b071' }, targetSeam: { backgroundColor: '#b48e4a' },
+  compartmentText: { color: '#7e8b90', fontSize: 10 }, targetText: { color: '#705321', fontWeight: '600' },
+  locationSummary: { color: '#4a5f6b', fontSize: 12, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#e4e7e4' },
 });

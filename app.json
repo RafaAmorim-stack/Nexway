@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Nexway",
+    "slug": "nexway",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "android": {
+      "package": "com.nexus.nexway",
+      "permissions": [
+        "CAMERA"
+      ]
+    },
+    "plugins": [
+      "@reactvision/react-viro"
+    ],
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "name": "nexway",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "web": "expo start --web",
+    "prebuild": "expo prebuild --platform android",
+    "doctor": "npx expo-doctor",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "verify": "npm run typecheck && npm test",
+    "export:web": "expo export --platform web"
+  },
+  "dependencies": {
+    "@reactvision/react-viro": "3.0.3",
+    "expo": "~57.0.31",
+    "expo-dev-client": "~57.0.20",
+    "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.4",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.3",
+    "@types/react": "~19.2.2",
+    "tsx": "^4.20.0",
+    "@types/node": "^22.0.0"
+  }
+}

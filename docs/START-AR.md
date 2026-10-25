@@ -1,23 +1,23 @@
-# Marco 2 — material e destino após START
+# Marco 3 — reconhecimento da estante destino
 
 Versões preservadas: Expo ~57.0.31, React Native 0.86.3 e @reactvision/react-viro 3.0.3.
 
 ## Teste manual no Xiaomi
 
-1. Instale o APK de desenvolvimento de android/app/build/outputs/apk/debug/app-debug.apk. Se o build já instalado é o do Marco 1 com as mesmas dependências nativas, basta carregar o JavaScript atualizado.
-2. No computador, em C:\NexWay\nexway, execute `npm start`. Mantenha o terminal aberto e o celular na mesma rede. No launcher Expo, use Fetch development servers e abra o servidor. Se necessário use `npm run start:tunnel` e escaneie o QR do Metro. Esse QR apenas conecta o aplicativo.
-3. Em Armazém virtual, busque `protecao` ou `MAT-002` e toque em Luva de proteção. Confira a indicação Selecionado e RACK-B. MAT-001 é a seleção inicial.
-4. Abra Câmera AR e permita a câmera. Antes do reconhecimento, confira Aguardando marcador START, Material: MAT-002 · Luva de proteção e Destino: RACK-B.
-5. Imprima assets/markers/START-01.png com a imagem medindo 20 × 20 cm. Aponte para a imagem completa em boa iluminação. Deve aparecer START reconhecido, mantendo material e destino.
-6. Retire a imagem do campo de visão e alterne entre as abas. Material, destino e confirmação devem permanecer. Coloque o app em segundo plano e retome: a confirmação também permanece.
-7. Volte ao Armazém virtual, selecione MAT-003 e abra Câmera AR: deve mostrar MAT-003, Destino: RACK-C e aguardar um novo START. Reconheça novamente. Repita com MAT-001 → RACK-A.
-8. Pesquise um código inexistente: deve aparecer Nenhum material encontrado e a seleção anterior permanece. Limpe a busca para exibir os três materiais. Selecionar novamente o mesmo material preserva a confirmação.
-9. Teste câmera negada e retorno dos ajustes. Apenas o reconhecimento da imagem START confirma o início.
+1. Instale android/app/build/outputs/apk/debug/app-debug.apk. Execute npm start em C:\NexWay\nexway e conecte o development client ao Metro na mesma rede; se necessário use npm run start:tunnel. O QR do Metro só conecta o aplicativo.
+2. Abra assets/markers/print.html e imprima START-01, RACK-A, RACK-B e RACK-C em tamanho real, sem ajuste à página. Cada imagem deve medir 20 × 20 cm. Use boa iluminação e mantenha a imagem inteira visível.
+3. Em Armazém virtual, selecione MAT-002 (Luva de proteção). Abra Câmera AR e permita a câmera. Confira material, Destino: RACK-B e Aguardando marcador START.
+4. Antes de START, mostre RACK-B e RACK-A: nenhum deles deve registrar chegada nem avançar o fluxo.
+5. Reconheça START-01: confira START reconhecido · Aguardando marcador da estante destino.
+6. Mostre RACK-A: confira Estante incorreta, Esperado: RACK-B e Reconhecido: RACK-A, sem chegada. Repita com RACK-C. Retire o marker: perder rastreamento não deve avançar o fluxo; a última mensagem fica visível.
+7. Mostre RACK-B: confira Estante correta reconhecida e Chegada registrada com data e hora. Mostre novamente RACK-B, START e outros racks: o registro deve permanecer com o mesmo horário.
+8. Alterne abas e coloque o aplicativo em segundo plano; ao retornar, seleção e chegada devem permanecer. Selecionar o mesmo material também preserva o estado.
+9. Selecione MAT-001: deve limpar reconhecimento e chegada, exigindo START novamente. Teste erro com RACK-B/RACK-C e sucesso com RACK-A. Repita para MAT-003, com destino RACK-C.
+10. Mostre START e o rack destino juntos: deve reconhecer START e depois o rack já visível. Com vários racks visíveis, o destino tem prioridade. Cubra e descubra os markers; apenas anchors reconhecidos e rastreados devem ser considerados.
+11. Teste câmera negada, retorno dos ajustes e pausa/retomada. Confira busca inexistente e preservação da seleção anterior.
 
-O estado fica em App e permanece em memória durante a alternância das telas. Fechar/reiniciar o aplicativo volta ao material inicial e aguarda START. O catálogo é demonstrativo; não há material 100001 nos dados atuais.
-
-A cena AR continua cadastrando exclusivamente START. Não há seta AR, reconhecimento de rack, setor/prateleira na câmera nem navegação contínua. O armazém virtual mantém sua simulação preexistente, separada da experiência AR.
+A chegada fica em memória na sessão do App, com rack e horário; fechar/reiniciar o aplicativo reinicia a sessão. Não há persistência em disco ou envio para servidor. Não há setor/prateleira na câmera, seta AR contínua ou navegação até o rack. A simulação do armazém permanece independente.
 
 ## Verificação
 
-Execute `npm run typecheck`, `npm test` e, dentro de android, `.\gradlew.bat assembleDebug`. O APK debug usa Metro; build e testes não substituem a validação óptica no Xiaomi.
+Execute npm run typecheck, npm test e, dentro de android, .\gradlew.bat assembleDebug. O APK debug depende do Metro. Build e testes automatizados não substituem validação óptica no Xiaomi.

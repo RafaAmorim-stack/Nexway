@@ -14,7 +14,7 @@ export default function App() {
     <View style={styles.header}><Text style={styles.brand}>Nexway<Text style={styles.brandSub}>  /  Operações</Text></Text><View style={styles.tabs}>
       {([{ id: 'warehouse', label: 'Armazém virtual' }, { id: 'ar', label: 'Câmera AR' }] as const).map(tab => <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: mode === tab.id }} onPress={() => setMode(tab.id)} style={[styles.tab, mode === tab.id && styles.activeTab]}><Text style={[styles.tabText, mode === tab.id && styles.activeText]}>{tab.label}</Text></Pressable>)}
     </View></View>
-    {mode === 'warehouse' ? <WarehouseSimulation selected={session.item} onSelect={item => dispatch({ type: 'select', code: item.code })} /> : <CameraExperience session={session} onStartRecognized={() => dispatch({ type: 'recognize-start' })} />}
+    {mode === 'warehouse' ? <WarehouseSimulation selected={session.item} onSelect={item => dispatch({ type: 'select', code: item.code })} /> : <CameraExperience session={session} onRackRecognized={rack => dispatch({ type: 'recognize-rack', rack, at: Date.now() })} onStartRecognized={() => dispatch({ type: 'recognize-start' })} />}
   </SafeAreaView></SafeAreaProvider>;
 }
 const styles = StyleSheet.create({

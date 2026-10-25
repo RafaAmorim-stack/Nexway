@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import ViroExperience from '../ar/ViroExperience';
-export type CameraProps = { onStartRecognized: () => void };
+import type { MaterialSession, RackId } from '../navigation/materialSession';
+export type CameraProps = { session: MaterialSession; onStartRecognized: () => void; onRackRecognized: (rack: RackId) => void };
 class ARBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }

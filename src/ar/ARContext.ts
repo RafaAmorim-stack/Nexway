@@ -1,5 +1,6 @@
 import { createContext } from 'react';
-export const ARContext = createContext<{
+import type { CameraProps } from '../camera/CameraPreview';
+export const ARContext = createContext<CameraProps & {
   onStartRecognized: () => void;
   onTracking: (message: string) => void;
 } | null>(null);

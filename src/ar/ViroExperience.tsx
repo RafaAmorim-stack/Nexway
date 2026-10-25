@@ -6,7 +6,7 @@ import { NavigationScene } from './NavigationScene';
 import { ARContext } from './ARContext';
 import type { CameraProps } from '../camera/CameraPreview';
 
-export default function ViroExperience({ onStartRecognized }: CameraProps) {
+export default function ViroExperience({ session, onStartRecognized, onRackRecognized }: CameraProps) {
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [active, setActive] = useState(AppState.currentState === 'active');
   const [tracking, setTracking] = useState('');
@@ -33,7 +33,7 @@ export default function ViroExperience({ onStartRecognized }: CameraProps) {
     {!!permission && <Pressable accessibilityRole="button" onPress={allowCamera} style={styles.button}><Text style={styles.buttonText}>{permission.canAskAgain ? 'Permitir câmera' : 'Abrir ajustes do aplicativo'}</Text></Pressable>}
   </View>;
   return <View style={styles.container}>
-    <ARContext.Provider value={{ onStartRecognized, onTracking: reportTracking }}>
+    <ARContext.Provider value={{ session, onRackRecognized, onStartRecognized, onTracking: reportTracking }}>
       <View style={styles.preview}>
         {active ? <ViroARSceneNavigator initialScene={{ scene: NavigationScene }} style={styles.camera} autofocus />
           : <Text style={styles.paused}>Câmera pausada enquanto o aplicativo está em segundo plano.</Text>}
@@ -41,7 +41,7 @@ export default function ViroExperience({ onStartRecognized }: CameraProps) {
     </ARContext.Provider>
     <View style={styles.instructions}>
       {!!tracking && <Text accessibilityLiveRegion="polite" style={styles.warning}>{tracking}</Text>}
-      <Text style={styles.description}>Aponte a câmera para o marcador START-01 impresso.</Text>
+      <Text style={styles.description}>{session.arrivedAt !== null ? 'Chegada registrada.' : session.startRecognized ? 'Aponte a câmera para ' + session.item.location.id + '.' : 'Aponte a câmera para o marcador START-01 impresso.'}</Text>
       <Text style={styles.caption}>ViroReact · reconhecimento por imagem. Marcadores impressos com 20 × 20 cm.</Text>
     </View>
   </View>;

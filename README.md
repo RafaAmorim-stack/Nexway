@@ -2,9 +2,9 @@
 
 Localização de materiais com armazém virtual e realidade aumentada por **ViroReact**. React Native + TypeScript + Expo SDK 57, compatível com ViroReact 3.0.3. A interface mantém o padrão visual claro das duas abas.
 
-## Marco 2 no Android
+## Marco 3 no Android
 
-Busque e selecione um material em **Armazém virtual**, abra **Câmera AR** e reconheça START para conferir material e destino. A seleção e a confirmação permanecem entre abas; trocar material exige reconhecer START novamente. Consulte o [roteiro de teste no Xiaomi](docs/START-AR.md).
+Busque e selecione um material em **Armazém virtual**, abra **Câmera AR** e reconheça START e o rack destino para registrar chegada. A seleção e a confirmação permanecem entre abas; trocar material exige reconhecer START novamente. Consulte o [roteiro de teste no Xiaomi](docs/START-AR.md).
 
 ## iPhone sem Xcode local: Expo EAS
 
@@ -36,25 +36,9 @@ Para Android, `npm run build:android` gera um APK de desenvolvimento pelo EAS. A
 
 ## Como usar a câmera AR
 
-1. Abra **Câmera AR**, selecione um material e permita o acesso à câmera.
-2. Reconheça a imagem do marcador **START-01**.
-3. Siga a identificação física até a estante e reconheça o marcador esperado, como **RACK-A**.
-4. Confira o setor/prateleira indicado no texto ancorado ao marcador e confirme a retirada.
-5. Compartilhe as métricas, se necessário.
+Selecione o material em Armazém virtual. Na Câmera AR, reconheça START-01 e depois o rack destino. Estantes erradas exibem o esperado e o reconhecido sem registrar chegada. A estante correta registra chegada uma única vez. Trocar material exige novo START.
 
-Imprima [os marcadores](assets/markers/print.html) em tamanho real, com a imagem medindo **20 × 20 cm**. Eles são alvos de reconhecimento de imagem, não QR codes.
-
-A cena trata detecção, atualização e remoção de anchors. Se START e uma estante já estiverem visíveis, o estado prioriza o checkpoint esperado. A indicação virtual é ocultada quando o marcador deixa de ser rastreado (incluindo a pose antiga reportada pelo ARCore).
-
-Os marcadores e a estabilidade do texto ancorado ainda precisam de validação no aparelho. O catálogo é fictício. Não há calibração do layout real nem seta espacial até a estante; o caminho da planta continua sendo uma simulação independente. O destaque atual é textual, e não uma delimitação 3D precisa da prateleira.
-
-## Demonstração e armazém virtual
-
-```sh
-npm run web
-```
-
-Escolha o material e use **Simular percurso** para acompanhar o caminho na planta. Na aba Câmera AR, o navegador oferece **Usar demonstração**, com botões START/RACK para validar a ordem e erros de estante. Essa demonstração permanece disponível também no aplicativo nativo.
+Imprima [os marcadores](assets/markers/print.html) em tamanho real (20 × 20 cm). Não são QR codes. Não há setor/prateleira na câmera, seta contínua ou navegação até o rack. A simulação do armazém permanece independente.
 
 ## Verificação
 

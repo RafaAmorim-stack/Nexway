@@ -1,18 +1,23 @@
 import React from 'react';
 import { ScrollView, View, Text, StyleSheet } from 'react-native';
-import CameraPreview from '../camera/CameraPreview';
-import { materialStatus, type MaterialSession } from '../navigation/materialSession';
+import CameraPreview, { type CameraProps } from '../camera/CameraPreview';
+import { materialStatus } from '../navigation/materialSession';
 
-export default function CameraExperience({ session, onStartRecognized }: { session: MaterialSession; onStartRecognized: () => void }) {
+export default function CameraExperience({ session, onStartRecognized, onRackRecognized }: CameraProps) {
   const status = materialStatus(session);
   return <ScrollView contentContainerStyle={styles.content}>
-    <Text style={styles.title}>Câmera AR · START</Text>
-    <Text style={styles.description}>Aponte a câmera para a imagem START-01 impressa em 20 × 20 cm.</Text>
+    <Text style={styles.title}>Câmera AR · Estante destino</Text>
+    <Text style={styles.description}>Reconheça START-01 e depois a estante destino. Imprima as imagens em 20 × 20 cm.</Text>
     <View style={styles.status}>
       <Text accessibilityLiveRegion="polite" style={styles.title}>{status.status}</Text>
       <Text style={styles.description}>{status.material}</Text><Text style={styles.title}>{status.destination}</Text>
     </View>
-    <CameraPreview onStartRecognized={onStartRecognized} />
+    {session.recognizedRack && <View accessibilityLiveRegion="polite">
+      <Text style={styles.title}>Esperado: {session.item.location.id}</Text>
+      <Text style={styles.title}>Reconhecido: {session.recognizedRack}</Text>
+    </View>}
+    {session.arrivedAt !== null && <Text style={styles.description}>Chegada registrada: {new Date(session.arrivedAt).toLocaleString('pt-BR')}</Text>}
+    <CameraPreview session={session} onStartRecognized={onStartRecognized} onRackRecognized={onRackRecognized} />
   </ScrollView>;
 }
 const styles = StyleSheet.create({

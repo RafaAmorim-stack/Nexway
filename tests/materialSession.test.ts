@@ -10,7 +10,7 @@ test('busca e seleção resolvem cada material para seu rack após START', () =>
     assert.equal(materialStatus(session).status, 'Aguardando marcador START');
     session = materialSessionReducer(session, { type: 'recognize-start' });
     assert.deepEqual(materialStatus(session), {
-      status: 'START reconhecido',
+      status: 'START reconhecido · Aguardando marcador da estante destino',
       material: `Material: ${item.code} · ${item.description}`,
       destination: `Destino: ${item.location.id}`,
     });

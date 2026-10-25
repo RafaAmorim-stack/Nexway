@@ -2,9 +2,9 @@
 
 Localização de materiais com armazém virtual e realidade aumentada por **ViroReact**. React Native + TypeScript + Expo SDK 57, compatível com ViroReact 3.0.3. A interface mantém o padrão visual claro das duas abas.
 
-## Marco 3 no Android
+## Marco 4 no Android
 
-Busque e selecione um material em **Armazém virtual**, abra **Câmera AR** e reconheça START e o rack destino para registrar chegada. A seleção e a confirmação permanecem entre abas; trocar material exige reconhecer START novamente. Consulte o [roteiro de teste no Xiaomi](docs/START-AR.md).
+Busque e selecione um material em **Armazém virtual**, abra **Câmera AR** e reconheça START para calcular a rota no mapa local; reconheça o rack destino para registrar chegada. A seleção e a confirmação permanecem entre abas; trocar material exige reconhecer START novamente. Consulte o [roteiro de teste no Xiaomi](docs/START-AR.md).
 
 ## iPhone sem Xcode local: Expo EAS
 
@@ -36,7 +36,7 @@ Para Android, `npm run build:android` gera um APK de desenvolvimento pelo EAS. A
 
 ## Como usar a câmera AR
 
-Selecione o material em Armazém virtual. Na Câmera AR, reconheça START-01 e depois o rack destino. Estantes erradas exibem o esperado e o reconhecido sem registrar chegada. A estante correta registra chegada uma única vez. Trocar material exige novo START.
+Selecione o material em Armazém virtual. Na Câmera AR, reconheça START-01 para exibir a rota, checkpoints e a próxima instrução. O plano usa o mapa local, sem markers intermediários nem posição ao vivo. Depois reconheça o rack destino. Estantes erradas exibem o esperado e o reconhecido sem registrar chegada. A estante correta registra chegada uma única vez. Trocar material exige novo START.
 
 Imprima [os marcadores](assets/markers/print.html) em tamanho real (20 × 20 cm). Não são QR codes. Não há setor/prateleira na câmera, seta contínua ou navegação até o rack. A simulação do armazém permanece independente.
 

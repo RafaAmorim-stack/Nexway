@@ -1,4 +1,4 @@
-# Marco 3 — reconhecimento da estante destino
+# Marco 4 — rota lógica após START e validação da estante
 
 Versões preservadas: Expo ~57.0.31, React Native 0.86.3 e @reactvision/react-viro 3.0.3.
 
@@ -21,3 +21,20 @@ A chegada fica em memória na sessão do App, com rack e horário; fechar/reinic
 ## Verificação
 
 Execute npm run typecheck, npm test e, dentro de android, .\gradlew.bat assembleDebug. O APK debug depende do Metro. Build e testes automatizados não substituem validação óptica no Xiaomi.
+
+## Rota local do Marco 4
+
+O mapa usa uma grade de 15 × 13 células, sem escala física. A origem fica no canto superior esquerdo: x cresce para a direita, y para baixo. START = (7,11). Os pontos de acesso são RACK-A = (4,4), RACK-B = (8,4), RACK-C = (12,4), ao lado das estantes, fora da área bloqueada. As paredes ocupam o contorno. As estantes bloqueiam os retângulos A: x=2..3/y=2..7, B: x=6..7/y=2..7 e C: x=10..11/y=2..7. As demais células internas são transitáveis.
+
+O cálculo por busca em largura usa movimentos entre células vizinhas, sem diagonais, e encontra o menor caminho disponível. Os checkpoints resumem as mudanças de direção. Exemplo: START (7,11) → Corredor principal (7,8) → Corredor B (8,8) → RACK-B (8,4). Nenhum checkpoint intermediário exige marker.
+
+### Teste complementar no Xiaomi
+
+1. Selecione MAT-002 e abra Câmera AR: antes de START não deve aparecer Rota calculada.
+2. Reconheça START. Confira material, RACK-B, rota textual, coordenadas dos checkpoints, traçado no mapa e Próxima instrução para o corredor principal.
+3. Confira que o caminho contorna as áreas das estantes. O mapa não mostra posição ao vivo. Caminhar ou esperar não avança a instrução e não registra chegada.
+4. Reconheça RACK-A: a mensagem de erro permanece com esperado/reconhecido; a rota continua para RACK-B, sem chegada. Reconheça RACK-B para validar a chegada.
+5. Troque para MAT-001 e depois MAT-003, reconhecendo START novamente a cada troca. Confira caminhos distintos e destinos RACK-A e RACK-C.
+6. Alterne abas e retome o app do segundo plano: o plano da seleção atual deve permanecer. Selecionar o mesmo material não reinicia a sessão.
+
+Não há tracking contínuo ARCore, seta AR dinâmica ou avanço automático entre checkpoints. A próxima instrução indica a saída do START até o primeiro checkpoint; após chegada exibe a validação final. As coordenadas são demonstrativas e precisam ser adaptadas ao armazém real antes de uso operacional.

@@ -3,8 +3,8 @@ import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Item, Location } from '../data/catalog';
 import { warehouse, type Point } from '../warehouse/layout';
 
-type Props = { item: Item; route: Point[]; step: number; onSelectRack: (id: Location['id']) => void };
-export function WarehouseMap({ item, route, step, onSelectRack }: Props) {
+type Props = { item: Item; route: Point[]; step: number; onSelectRack?: (id: Location['id']) => void; planning?: boolean };
+export function WarehouseMap({ item, route, step, onSelectRack, planning = false }: Props) {
   const position = route[step] ?? warehouse.entrance;
   const x = useRef(new Animated.Value(position.x)).current;
   const y = useRef(new Animated.Value(position.y)).current;
@@ -18,7 +18,7 @@ export function WarehouseMap({ item, route, step, onSelectRack }: Props) {
   }, [position.x, position.y, x, y]);
   return <View style={styles.frame}>
     <View style={styles.topline}><Text style={styles.small}>Planta do armazém</Text><Text style={styles.small}>Vista superior / sem escala</Text></View>
-    <View style={styles.map} accessibilityLabel={`Armazém simulado. Destino: ${item.location.label}. Passo ${step} de ${Math.max(0, route.length - 1)}.`}>
+    <View style={styles.map} accessibilityLabel={planning ? `Rota planejada de START até ${item.location.id}. Sem posição ao vivo.` : `Armazém simulado. Destino: ${item.location.label}. Passo ${step} de ${Math.max(0, route.length - 1)}.`}>
       {Array.from({ length: warehouse.columns * warehouse.rows }, (_, i) => <View key={i} style={[styles.tile, {
         left: `${(i % warehouse.columns) * 100 / warehouse.columns}%`, top: `${Math.floor(i / warehouse.columns) * 100 / warehouse.rows}%`,
         width: `${100 / warehouse.columns}%`, height: `${100 / warehouse.rows}%`,
@@ -36,22 +36,22 @@ export function WarehouseMap({ item, route, step, onSelectRack }: Props) {
       })}
       {warehouse.racks.map(rack => {
         const active = rack.id === item.location.id;
-        return <Pressable key={rack.id} accessibilityRole="button" accessibilityLabel={`Estante ${rack.label}${active ? ', destino selecionado' : ', selecionar material desta estante'}`} onPress={() => onSelectRack(rack.id)} style={[styles.rack, active && styles.activeRack, {
+        return <Pressable key={rack.id} disabled={!onSelectRack} accessibilityRole={onSelectRack ? "button" : "image"} accessibilityLabel={`Estante ${rack.label}${active ? ', destino selecionado' : ', selecionar material desta estante'}`} onPress={() => onSelectRack?.(rack.id)} style={[styles.rack, active && styles.activeRack, {
           left: `${rack.x * 100 / warehouse.columns}%`, top: `${rack.y * 100 / warehouse.rows}%`, width: `${rack.width * 100 / warehouse.columns}%`, height: `${rack.height * 100 / warehouse.rows}%`,
         }]}>
           <Text style={[styles.rackTitle, active && styles.activeText]}>{rack.label}</Text>
-          {[1, 2, 3].map(n => <View key={n} style={[styles.rackSlot, active && n === Number(item.location.sector) && styles.activeSlot]}><Text style={[styles.slotText, active && n === Number(item.location.sector) && styles.activeText]}>S{n}</Text></View>)}
+          {!planning && [1, 2, 3].map(n => <View key={n} style={[styles.rackSlot, active && n === Number(item.location.sector) && styles.activeSlot]}><Text style={[styles.slotText, active && n === Number(item.location.sector) && styles.activeText]}>S{n}</Text></View>)}
           {active && <Text style={styles.target}>Destino</Text>}
         </Pressable>;
       })}
       <View style={styles.entrance}><Text style={styles.entranceText}>Entrada · START</Text></View>
-      <Animated.View style={[styles.person, {
+      {!planning && <Animated.View style={[styles.person, {
         left: x.interpolate({ inputRange: [0, warehouse.columns], outputRange: [`${50 / warehouse.columns}%`, `${100 + 50 / warehouse.columns}%`] }),
         top: y.interpolate({ inputRange: [0, warehouse.rows], outputRange: [`${50 / warehouse.rows}%`, `${100 + 50 / warehouse.rows}%`] }),
-      }]}><View style={styles.personDot} /></Animated.View>
+      }]}><View style={styles.personDot} /></Animated.View>}
       {route.length > 0 && <View style={[styles.destination, { left: `${(route[route.length - 1]!.x + 0.5) * 100 / warehouse.columns}%`, top: `${(route[route.length - 1]!.y + 0.5) * 100 / warehouse.rows}%` }]}><View style={styles.destinationDot} /></View>}
     </View>
-    <View style={styles.legend}><View style={styles.legendItem}><View style={styles.legendPerson} /><Text style={styles.legendText}>Posição</Text></View><View style={styles.legendItem}><View style={styles.legendRoute} /><Text style={styles.legendText}>Percurso</Text></View><View style={styles.legendItem}><View style={styles.legendTarget} /><Text style={styles.legendText}>Destino</Text></View></View>
+    <View style={styles.legend}>{!planning && <View style={styles.legendItem}><View style={styles.legendPerson} /><Text style={styles.legendText}>Posição</Text></View>}<View style={styles.legendItem}><View style={styles.legendRoute} /><Text style={styles.legendText}>Percurso</Text></View><View style={styles.legendItem}><View style={styles.legendTarget} /><Text style={styles.legendText}>Destino</Text></View></View>
   </View>;
 }
 const styles = StyleSheet.create({

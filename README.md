@@ -2,6 +2,10 @@
 
 Localização de materiais com armazém virtual e realidade aumentada por **ViroReact**. React Native + TypeScript + Expo SDK 57, compatível com ViroReact 3.0.3. A interface mantém o padrão visual claro das duas abas.
 
+## Marco 2 no Android
+
+Busque e selecione um material em **Armazém virtual**, abra **Câmera AR** e reconheça START para conferir material e destino. A seleção e a confirmação permanecem entre abas; trocar material exige reconhecer START novamente. Consulte o [roteiro de teste no Xiaomi](docs/START-AR.md).
+
 ## iPhone sem Xcode local: Expo EAS
 
 O Nexway é executado como aplicativo nativo com ViroReact. O EAS compila o aplicativo na nuvem, dispensando Xcode neste Mac. Para instalar no iPhone físico, é necessário ter conta Expo, assinatura Apple Developer ativa e registrar o aparelho.
@@ -65,3 +69,4 @@ npm run export:android
 Exportar o bundle não equivale a compilar um IPA/APK nem a validar o rastreamento em dispositivo físico. O perfil `development` está em `eas.json`; os diretórios nativos gerados localmente são excluídos do upload por `.easignore`, para o EAS gerar projetos com a configuração atual.
 
 A geração na nuvem ainda depende do login e da vinculação do projeto à conta Expo. Consulte [desenvolvimento](docs/DEVELOPMENT.md), [ViroReact + Expo](https://viro-community.readme.io/docs/integrating-with-expo) e [EAS para iPhone](https://docs.expo.dev/tutorial/eas/ios-development-build-for-devices/).
+

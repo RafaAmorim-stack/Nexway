@@ -5,8 +5,7 @@ import { WarehouseMap } from '../components/WarehouseMap';
 import { instructionAt, routeToRack } from '../warehouse/layout';
 
 type Playback = 'ready' | 'running' | 'paused' | 'arrived';
-export default function WarehouseSimulation() {
-  const [selected, setSelected] = useState<Item>(items[0]!);
+export default function WarehouseSimulation({ selected, onSelect }: { selected: Item; onSelect: (item: Item) => void }) {
   const [query, setQuery] = useState('');
   const [step, setStep] = useState(0);
   const [playback, setPlayback] = useState<Playback>('ready');
@@ -23,7 +22,7 @@ export default function WarehouseSimulation() {
     }, 550);
     return () => clearTimeout(timer);
   }, [playback, route.length, step]);
-  function select(item: Item) { setSelected(item); setStep(0); setPlayback('ready'); }
+  function select(item: Item) { onSelect(item); setStep(0); setPlayback('ready'); }
   function selectRack(id: Location['id']) {
     if (id === selected.location.id) return;
     const item = items.find(candidate => candidate.location.id === id);
@@ -110,3 +109,4 @@ const styles = StyleSheet.create({
   compartmentText: { color: '#7e8b90', fontSize: 10 }, targetText: { color: '#705321', fontWeight: '600' },
   locationSummary: { color: '#4a5f6b', fontSize: 12, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#e4e7e4' },
 });
+

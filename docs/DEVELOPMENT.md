@@ -19,6 +19,10 @@ Depois de instalar o Nexway, `npm start` inicia o Metro para o development clien
 
 `.easignore` exclui `android/` e `ios/` gerados localmente para o EAS criar projetos nativos a partir da configuração atual. O build na nuvem ainda depende de login e vinculação à conta Expo; não há IPA gerado nem teste físico concluído.
 
+## Estado atual — Marco 2
+
+O roteiro vigente de teste Android/Xiaomi está em [START-AR.md](START-AR.md). A câmera reconhece exclusivamente START e exibe material e rack destino. A seleção e a confirmação ficam em App, compartilhadas entre abas; trocar material reinicia a confirmação. Não há reconhecimento de rack, seta AR ou setor/prateleira na câmera. As regras START → RACK de session.ts e markerSelection.ts são auxiliares legados e não estão conectadas à câmera atual. As descrições de chegada e texto ancorado abaixo são planejamento para etapas futuras.
+
 ## Estrutura de realidade aumentada
 
 - `src/camera/CameraPreview.tsx`: entrada direta da experiência ViroReact e tratamento de erro de renderização.
@@ -58,3 +62,4 @@ O baseline WL04 não foi fornecido e sua validação permanece pendente. O catá
 `npm run verify` executa TypeScript e os testes de busca, sessão, prioridade de marcadores e caminhos da planta. A automação também exporta bundles web, iOS e Android. `npm run doctor` verifica a configuração e a compatibilidade do SDK.
 
 A árvore Expo/ViroReact apresenta alertas de dependências herdadas relacionados a `braces` e `node-forge`. Reavaliar atualizações compatíveis antes da distribuição; não forçar versões fora das faixas suportadas para contornar esses alertas.
+

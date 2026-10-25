@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useReducer } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import WarehouseSimulation from './src/screens/WarehouseSimulation';
 import CameraExperience from './src/screens/CameraExperience';
+import { initialMaterialSession, materialSessionReducer } from './src/navigation/materialSession';
 
 export default function App() {
   const [mode, setMode] = useState<'warehouse' | 'ar'>('warehouse');
+  const [session, dispatch] = useReducer(materialSessionReducer, undefined, initialMaterialSession);
   return <SafeAreaProvider><SafeAreaView style={styles.root}>
     <StatusBar style="dark" />
     <View style={styles.header}><Text style={styles.brand}>Nexway<Text style={styles.brandSub}>  /  Operações</Text></Text><View style={styles.tabs}>
       {([{ id: 'warehouse', label: 'Armazém virtual' }, { id: 'ar', label: 'Câmera AR' }] as const).map(tab => <Pressable key={tab.id} accessibilityRole="button" accessibilityState={{ selected: mode === tab.id }} onPress={() => setMode(tab.id)} style={[styles.tab, mode === tab.id && styles.activeTab]}><Text style={[styles.tabText, mode === tab.id && styles.activeText]}>{tab.label}</Text></Pressable>)}
     </View></View>
-    {mode === 'warehouse' ? <WarehouseSimulation /> : <CameraExperience />}
+    {mode === 'warehouse' ? <WarehouseSimulation selected={session.item} onSelect={item => dispatch({ type: 'select', code: item.code })} /> : <CameraExperience session={session} onStartRecognized={() => dispatch({ type: 'recognize-start' })} />}
   </SafeAreaView></SafeAreaProvider>;
 }
 const styles = StyleSheet.create({
@@ -26,3 +28,4 @@ const styles = StyleSheet.create({
   tabText: { color: '#69747b', fontSize: 13 },
   activeText: { color: '#263f50', fontWeight: '600' },
 });
+

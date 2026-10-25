@@ -1,14 +1,12 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import ViroExperience from '../ar/ViroExperience';
-import type { Session } from '../navigation/session';
-import type { MarkerId } from '../data/catalog';
-export type CameraProps = { session: Session; onMarker: (id: MarkerId) => void };
+export type CameraProps = { onStartRecognized: () => void };
 class ARBoundary extends React.Component<{ children: React.ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
-    if (this.state.failed) return <View style={styles.message}><Text style={styles.heading}>Não foi possível iniciar a realidade aumentada</Text><Text style={styles.description}>Use o build de desenvolvimento do Nexway com ViroReact em um aparelho compatível com ARKit ou ARCore. Você pode continuar pelo modo demonstração.</Text></View>;
+    if (this.state.failed) return <View style={styles.message}><Text style={styles.heading}>Não foi possível iniciar a realidade aumentada</Text><Text style={styles.description}>Use o build de desenvolvimento do Nexway com ViroReact em um aparelho compatível com ARKit ou ARCore.</Text></View>;
     return this.props.children;
   }
 }

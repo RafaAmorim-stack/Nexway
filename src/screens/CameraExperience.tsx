@@ -24,9 +24,9 @@ export default function CameraExperience({ session, onStartRecognized, onRackRec
       <Text style={styles.title}>Rota calculada</Text>
       <Text style={styles.description}>{route.checkpoints.map(checkpoint => checkpoint.label).join(' → ')}</Text>
       {route.checkpoints.map((checkpoint, i) => <Text key={i} style={styles.description}>{checkpoint.label}: ({checkpoint.point.x}, {checkpoint.point.y})</Text>)}
-      <Text accessibilityLiveRegion="polite" style={styles.title}>Próxima instrução</Text>
+      <Text accessibilityLiveRegion="polite" style={styles.title}>Instrução inicial do plano</Text>
       <Text style={styles.description}>{route.nextInstruction}</Text>
-      <Text style={styles.description}>Plano a partir do START. A instrução permanece inicial até validar a chegada; a posição do usuário não é acompanhada.</Text>
+      <Text style={styles.description}>Plano a partir do START. A orientação e os valores relativos atualizados aparecem junto à câmera.</Text>
       <WarehouseMap item={session.item} route={route.points} step={0} planning />
     </View>}
     <CameraPreview session={session} onStartRecognized={onStartRecognized} onRackRecognized={onRackRecognized} />

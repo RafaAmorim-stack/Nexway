@@ -12,7 +12,7 @@ class ARBoundary extends React.Component<{ children: React.ReactNode }, { failed
   }
 }
 export default function CameraPreview(props: CameraProps) {
-  return <ARBoundary><ViroExperience {...props} /></ARBoundary>;
+  return <ARBoundary><ViroExperience key={props.session.item.code} {...props} /></ARBoundary>;
 }
 const styles = StyleSheet.create({
   message: { padding: 20, gap: 12, borderWidth: 1, borderColor: '#d5dbd9', backgroundColor: '#ffffff', borderRadius: 4 },

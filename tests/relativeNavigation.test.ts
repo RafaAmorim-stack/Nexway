@@ -1,3 +1,4 @@
+import { completeRoute } from './helpers/materialJourney';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { initialNavigation, navigationReducer as reduce, relativePosition, relativeHeading, distanceBetween, guidance, checkpointPosition, CHECKPOINT_TOLERANCE, type Pose } from '../src/navigation/relativeNavigation';
@@ -58,7 +59,7 @@ test('percorre todos os checkpoints dos três materiais sem confirmar chegada au
     const wrong = code === 'MAT-001' ? 'RACK-B' : 'RACK-A';
     session = materialSessionReducer(session, { type: 'recognize-rack', rack: wrong, at: 1 });
     assert.equal(session.arrivedAt, null);
-    session = materialSessionReducer(session, { type: 'recognize-rack', rack: session.item.location.id, at: 2 });
+    session = materialSessionReducer(completeRoute(session), { type: 'recognize-rack', rack: session.item.location.id, at: 2 });
     assert.equal(session.arrivedAt, 2);
   }
 });

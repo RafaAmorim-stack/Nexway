@@ -1,3 +1,4 @@
+import { completeRoute } from './helpers/materialJourney';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { items } from '../src/data/catalog';
@@ -58,7 +59,7 @@ test('calcular rota e reconhecer rack errado não concluem; rack correto valida 
   const wrong = reduce(started, { type: 'recognize-rack', rack: 'RACK-B', at: 10 });
   assert.equal(wrong.arrivedAt, null);
   assert.deepEqual(materialRoute(wrong), route);
-  const arrived = reduce(wrong, { type: 'recognize-rack', rack: 'RACK-A', at: 20 });
+  const arrived = reduce(completeRoute(wrong), { type: 'recognize-rack', rack: 'RACK-A', at: 20 });
   assert.equal(arrived.arrivedAt, 20);
   assert.deepEqual(materialRoute(arrived)!.points, route.points);
   assert.equal(materialRoute(arrived)!.nextInstruction, 'Chegada validada pelo marcador RACK-A.');

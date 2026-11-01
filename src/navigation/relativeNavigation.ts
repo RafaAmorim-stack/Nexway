@@ -9,6 +9,9 @@ export type NavigationAction = { type: 'select'; code: string } | { type: 'calib
 export function initialNavigation(materialCode: string): NavigationState {
   return { materialCode, origin: null, position: null, heading: 0, nextIndex: 1 };
 }
+export function checkpointsCompleted(state: NavigationState, checkpoints: readonly Checkpoint[]): boolean {
+  return state.origin !== null && state.position !== null && checkpoints.length > 1 && state.nextIndex === checkpoints.length;
+}
 export function validPose(pose: Pose): boolean {
   return pose.position.length === 3 && pose.forward.length === 3 && [...pose.position, ...pose.forward].every(Number.isFinite) && Math.hypot(pose.forward[0]!, pose.forward[2]!) > 0.1;
 }

@@ -3,6 +3,7 @@ import { ViroARScene, ViroARImageMarker, ViroARTrackingTargets } from '@reactvis
 import { ARContext } from './ARContext';
 import { markers, type MarkerId } from '../data/catalog';
 import { materialMarker } from './materialMarker';
+import { canValidateRack } from '../navigation/materialSession';
 import { validPose, type Pose } from '../navigation/relativeNavigation';
 // A imagem impressa completa deve ter 20 cm de largura.
 ViroARTrackingTargets.createTargets({
@@ -27,7 +28,7 @@ export function NavigationScene() {
       return;
     }
     const marker = materialMarker(context.session, visible.current);
-    if (marker && marker !== 'START-01') context.onRackRecognized(marker);
+    if (marker && marker !== 'START-01' && (marker !== context.session.item.location.id || canValidateRack(context.session))) context.onRackRecognized(marker);
   }
   function visibility(id: MarkerId, tracked: boolean) {
     visible.current = tracked ? [...new Set([...visible.current, id])] : visible.current.filter(value => value !== id);

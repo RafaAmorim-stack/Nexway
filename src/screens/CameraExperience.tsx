@@ -5,7 +5,7 @@ import { materialRoute } from '../navigation/materialRoute';
 import { WarehouseMap } from '../components/WarehouseMap';
 import { materialStatus } from '../navigation/materialSession';
 
-export default function CameraExperience({ session, onStartRecognized, onRackRecognized }: CameraProps) {
+export default function CameraExperience({ session, onStartRecognized, onRackRecognized, onNavigationAction }: CameraProps) {
   const status = materialStatus(session);
   const route = materialRoute(session);
   return <ScrollView contentContainerStyle={styles.content}>
@@ -29,7 +29,7 @@ export default function CameraExperience({ session, onStartRecognized, onRackRec
       <Text style={styles.description}>Plano a partir do START. A orientação e os valores relativos atualizados aparecem junto à câmera.</Text>
       <WarehouseMap item={session.item} route={route.points} step={0} planning />
     </View>}
-    <CameraPreview session={session} onStartRecognized={onStartRecognized} onRackRecognized={onRackRecognized} />
+    <CameraPreview onNavigationAction={onNavigationAction} session={session} onStartRecognized={onStartRecognized} onRackRecognized={onRackRecognized} />
   </ScrollView>;
 }
 const styles = StyleSheet.create({

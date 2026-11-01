@@ -1,3 +1,4 @@
+import { completeRoute } from './helpers/materialJourney';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { items, type MarkerId } from '../src/data/catalog';
@@ -24,6 +25,7 @@ test('cada material rejeita os outros racks e registra chegada uma única vez no
       assert.equal(session.item, item);
       assert.equal(reduce(session, { type: 'recognize-rack', rack: other.location.id, at: 11 }), session);
     }
+    session = completeRoute(session);
     const visible: MarkerId[] = ['RACK-A', 'RACK-B', 'RACK-C', 'START-01'];
     assert.equal(materialMarker(session, visible), item.location.id);
     session = reduce(session, { type: 'recognize-rack', rack: item.location.id, at: 20 });
@@ -41,7 +43,7 @@ test('cada material rejeita os outros racks e registra chegada uma única vez no
 test('rack já visível é processado após START e perda não gera reconhecimento', () => {
   const initial = initialMaterialSession();
   assert.equal(materialMarker(initial, ['RACK-A', 'START-01']), 'START-01');
-  const started = reduce(initial, { type: 'recognize-start' });
+  const started = completeRoute(initial);
   assert.equal(materialMarker(started, ['RACK-A', 'START-01']), 'RACK-A');
   assert.equal(materialMarker(started, []), undefined);
 });

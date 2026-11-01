@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useReducer, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { AppState, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useCameraPermissions } from 'expo-camera';
 import { ViroARSceneNavigator } from '@reactvision/react-viro';
@@ -6,26 +6,30 @@ import { NavigationScene } from './NavigationScene';
 import { ARContext } from './ARContext';
 import type { CameraProps } from '../camera/CameraPreview';
 import { materialRoute } from '../navigation/materialRoute';
-import { navigationReducer, initialNavigation, guidance, validPose, METERS_PER_CELL, CHECKPOINT_TOLERANCE, type Pose } from '../navigation/relativeNavigation';
+import { guidance, validPose, METERS_PER_CELL, CHECKPOINT_TOLERANCE, type Pose } from '../navigation/relativeNavigation';
 
-export default function ViroExperience({ session, onStartRecognized, onRackRecognized }: CameraProps) {
+export default function ViroExperience({ session, onStartRecognized, onRackRecognized, onNavigationAction }: CameraProps) {
   const [permission, requestPermission, getPermission] = useCameraPermissions();
   const [active, setActive] = useState(AppState.currentState === 'active');
   const [tracking, setTracking] = useState('');
   const [error, setError] = useState('');
-  const [navigation, navigate] = useReducer(navigationReducer, session.item.code, initialNavigation);
+  const navigation = session.navigation;
   const lastPoseAt = useRef(0);
   const route = materialRoute(session);
   const next = guidance(navigation, route?.checkpoints ?? []);
-  const loseNavigation = useCallback(() => navigate({ type: 'lost' }), []);
+  const loseNavigation = useCallback(() => onNavigationAction({ type: 'navigation-lost' }), [onNavigationAction]);
+  useEffect(() => {
+    loseNavigation();
+    return loseNavigation;
+  }, [loseNavigation]);
   function cameraPose(pose: Pose) {
     lastPoseAt.current = Date.now();
-    if (session.arrivedAt === null) navigate({ type: 'pose', pose, checkpoints: route?.checkpoints ?? [] });
+    if (session.arrivedAt === null) onNavigationAction({ type: 'pose', pose });
   }
   function startPose(pose: Pose) {
     if (!validPose(pose)) return;
     lastPoseAt.current = Date.now();
-    navigate({ type: 'calibrate', pose });
+    onNavigationAction({ type: 'calibrate', pose });
   }
   useEffect(() => {
     const timer = setInterval(() => {
@@ -60,7 +64,7 @@ export default function ViroExperience({ session, onStartRecognized, onRackRecog
     {!!permission && <Pressable accessibilityRole="button" onPress={allowCamera} style={styles.button}><Text style={styles.buttonText}>{permission.canAskAgain ? 'Permitir câmera' : 'Abrir ajustes do aplicativo'}</Text></Pressable>}
   </View>;
   return <View style={styles.container}>
-    <ARContext.Provider value={{ session, onRackRecognized, onStartRecognized, onTracking: reportTracking, navigationReady: navigation.origin !== null, onStartPose: startPose, onCameraPose: cameraPose, onNavigationLost: loseNavigation }}>
+    <ARContext.Provider value={{ session, onNavigationAction, onRackRecognized, onStartRecognized, onTracking: reportTracking, navigationReady: navigation.origin !== null, onStartPose: startPose, onCameraPose: cameraPose, onNavigationLost: loseNavigation }}>
       <View style={styles.preview}>
         {active ? <ViroARSceneNavigator initialScene={{ scene: NavigationScene }} style={styles.camera} autofocus />
           : <Text style={styles.paused}>Câmera pausada enquanto o aplicativo está em segundo plano.</Text>}

@@ -12,3 +12,4 @@ coverage/
 *.apk
 *.aab
 dist-*/
+logs/

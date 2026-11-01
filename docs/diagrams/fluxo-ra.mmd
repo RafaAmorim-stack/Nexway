@@ -1,0 +1,22 @@
+flowchart TD
+  A[Usuário seleciona material] --> B[App identifica o rack destino]
+  B --> C[Usuário abre a Câmera AR e autoriza a câmera]
+  C --> D[ViroReact inicia a sessão AR no ARCore]
+  D --> E{Marcador START-01 reconhecido?}
+  E -- Não --> D
+  E -- Sim --> F[Captura posição e direção frontal da câmera = origem 0,0]
+  F --> G[Calcula rota na grade 15x13 por busca em largura]
+  G --> H[Gera checkpoints nas mudanças de direção]
+  H --> I[onCameraTransformUpdate fornece a pose]
+  I --> J[Projeta a pose em X direita e Z frente]
+  J --> K[Exibe direção, distância e próximo checkpoint]
+  K --> L{Checkpoint a menos de 0,45 m?}
+  L -- Sim --> M[Avança ao próximo checkpoint]
+  L -- Não --> I
+  M --> N{Todos percorridos?}
+  N -- Não --> I
+  N -- Sim --> O[Pede o marcador do rack destino]
+  O --> P{Rack reconhecido é o esperado?}
+  P -- Não --> Q[Mostra esperado x reconhecido, sem chegada]
+  Q --> O
+  P -- Sim --> R[Chegada validada pelo rack]

@@ -1,0 +1,13 @@
+flowchart TD
+  U([Usuário]) --> UI[Interface React Native<br/>App.tsx · abas Armazém virtual / Câmera AR]
+  UI --> ST[Estado da sessão<br/>materialSession.ts]
+  UI --> WH[Armazém virtual<br/>WarehouseSimulation · layout.ts · BFS]
+  ST --> CAM[Câmera AR<br/>CameraExperience · ViroExperience]
+  CAM --> VIRO[ViroReact 3.0.3<br/>ViroARSceneNavigator · ViroARImageMarker]
+  VIRO --> ARC[ARCore - Android]
+  ARC --> HW[Câmera e sensores do smartphone]
+  CAM --> NAV[Navegação relativa<br/>relativeNavigation.ts · materialRoute.ts]
+  NAV --> OVL[Sobreposição 2D<br/>direção · distância · X/Z]
+  CAT[(Catálogo local<br/>catalog.ts)] --> ST
+  CAT --> WH
+  PERM[expo-camera<br/>permissão da câmera] --> CAM

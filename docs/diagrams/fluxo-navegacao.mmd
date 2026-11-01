@@ -1,0 +1,7 @@
+flowchart LR
+  T1[Aba Armazém virtual<br/>busca e seleção do material] --> T2[Planta com destino<br/>e simulação do percurso]
+  T2 --> T3[Aba Câmera AR<br/>aguardando START]
+  T3 --> T4[START reconhecido<br/>rota e checkpoints]
+  T4 --> T5[Orientação relativa<br/>direção e distância]
+  T5 --> T6[Chegada validada pelo rack]
+  T6 -. trocar material .-> T1

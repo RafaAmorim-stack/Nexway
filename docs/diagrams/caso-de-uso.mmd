@@ -1,0 +1,9 @@
+flowchart LR
+  OP([Operador]) --- UC1(Buscar e selecionar material)
+  OP --- UC2(Consultar planta e destino)
+  OP --- UC3(Simular percurso)
+  OP --- UC4(Reconhecer START)
+  OP --- UC5(Seguir orientação visual)
+  OP --- UC6(Validar chegada pelo rack)
+  UC4 -. inclui .-> UC5
+  UC5 -. inclui .-> UC6

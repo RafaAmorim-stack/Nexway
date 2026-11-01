@@ -1,65 +1,67 @@
-# Desenvolvimento Nexway
+# Desenvolvimento NexWay
 
-O projeto usa **React Native, TypeScript e ViroReact 3.0.3**, com aplicativo nativo próprio. Expo SDK 57, React Native 0.86.3 e React 19.2.3 respeitam a compatibilidade declarada pelo ViroReact. O Expo fornece as ferramentas de desenvolvimento e o EAS permite compilar na nuvem, sem Xcode local.
+O projeto usa **React Native 0.86.3, React 19.2.3, TypeScript ~6.0.3, Expo ~57.0.31 e ViroReact 3.0.3**, com aplicativo nativo próprio. O Expo fornece as ferramentas de desenvolvimento e o EAS permite compilar na nuvem. O aplicativo não roda no Expo Go.
 
-O planejamento de referência está no PDF `NexWay_Divisao_Desenvolvimento_Leonardo_Rafael.pdf`, com entrega prevista em 01/12/2026.
+O planejamento de referência está em `NexWay_Divisao_Desenvolvimento_Leonardo_Rafael.pdf`, com entrega prevista em 01/12/2026.
 
 ## Responsabilidades e integração
 
-Leonardo: catálogo, destinos, regras de navegação, integração de estado e métricas.
-Rafael: ambiente mobile, reconhecimento de imagens, cena AR e validação física.
+- Leonardo: catálogo, destinos, regras de navegação, integração de estado e métricas.
+- Rafael: ambiente mobile, reconhecimento de imagens, cena AR e validação física.
 
-Use `develop` para integração e `feat/*` ou `fix/*` para alterações. Abra PR com referência à issue/card e solicite revisão do outro desenvolvedor. `main` deve conter versões demonstráveis.
+Use `develop` para integração e `feat/*` ou `fix/*` para alterações. Abra PR com referência à issue ou ao card e peça revisão do outro desenvolvedor. `main` deve conter versões demonstráveis.
 
-## Execução nativa
+## Estado atual — Marco 5
 
-O README contém os comandos para autenticar no EAS, vincular o projeto, registrar o iPhone e gerar o build. O perfil `development` em `eas.json` produz o aplicativo para dispositivo físico. A instalação no iPhone depende de credenciais Apple Developer e do Modo de Desenvolvedor.
+- A câmera reconhece **START-01** e os racks **RACK-A, RACK-B e RACK-C**.
+- Ao reconhecer o START, o app captura a pose da câmera, calcula a rota na grade 15 × 13 e acompanha a pose relativa X/Z com `onCameraTransformUpdate`.
+- A sobreposição 2D mostra direção, distância e próximo checkpoint; a chegada só é validada pelo reconhecimento do rack correto.
+- Rack incorreto mostra esperado × reconhecido, sem chegada. Tracking limitado, pose inválida ou salto superior a 2 m suspendem a orientação e exigem novo START.
+- Seleção e confirmação ficam em `App`, compartilhadas entre as abas. Trocar de material exige novo START.
+- Não há setor ou prateleira na câmera, seta 3D, VPS, Cloud Anchors, GPS indoor nem backend.
+- `src/navigation/session.ts` e `src/ar/markerSelection.ts` são regras legadas (START → RACK) e não estão conectadas à câmera atual.
 
-Depois de instalar o Nexway, `npm start` inicia o Metro para o development client. O QR code/deep link abre o aplicativo Nexway instalado. Use `npm run start:tunnel` quando a rede bloquear a conexão direta. Alterações de módulos nativos ou plugins exigem um novo build.
-
-`.easignore` exclui `android/` e `ios/` gerados localmente para o EAS criar projetos nativos a partir da configuração atual. O build na nuvem ainda depende de login e vinculação à conta Expo; não há IPA gerado nem teste físico concluído.
-
-## Estado atual — Marco 2
-
-O roteiro vigente de teste Android/Xiaomi está em [START-AR.md](START-AR.md). A câmera reconhece exclusivamente START e exibe material e rack destino. A seleção e a confirmação ficam em App, compartilhadas entre abas; trocar material reinicia a confirmação. Não há reconhecimento de rack, seta AR ou setor/prateleira na câmera. As regras START → RACK de session.ts e markerSelection.ts são auxiliares legados e não estão conectadas à câmera atual. As descrições de chegada e texto ancorado abaixo são planejamento para etapas futuras.
+O roteiro vigente de teste Android/Xiaomi está em [START-AR.md](START-AR.md). A evidência do build está em [BUILD_EVIDENCE.md](BUILD_EVIDENCE.md).
 
 ## Estrutura de realidade aumentada
 
-- `src/camera/CameraPreview.tsx`: entrada direta da experiência ViroReact e tratamento de erro de renderização.
-- `src/ar/ViroExperience.tsx`: permissão da câmera, ciclo de vida e ViroARSceneNavigator.
+- `src/camera/CameraPreview.tsx`: entrada da experiência ViroReact e tratamento de erro de renderização.
+- `src/ar/ViroExperience.tsx`: permissão da câmera, ciclo de vida e `ViroARSceneNavigator`.
 - `src/ar/ARContext.ts`: estado compartilhado entre a navegação e a cena.
-- `src/ar/NavigationScene.tsx`: cadastro de targets, eventos de anchors e texto ancorado.
-- `src/ar/markerSelection.ts`: prioridade do checkpoint esperado entre imagens visíveis.
-- `src/navigation/session.ts`: sequência START → RACK, erros, conclusão e métricas.
+- `src/ar/NavigationScene.tsx`: cadastro dos targets, eventos de anchors e pose da câmera.
+- `src/ar/materialMarker.ts`: qual marcador visível vale em cada fase.
+- `src/navigation/materialSession.ts`, `materialRoute.ts` e `relativeNavigation.ts`: sessão, rota e navegação relativa.
 
-`expo-camera` é usado somente para consultar e solicitar a permissão. O ViroReact renderiza a câmera e os objetos virtuais. A câmera é desmontada ao sair da aba e ao entrar em segundo plano; a sessão de navegação permanece em memória.
+`expo-camera` é usado somente para consultar e solicitar a permissão. O ViroReact renderiza a câmera. A câmera é desmontada ao sair da aba e ao entrar em segundo plano; a sessão fica em memória.
 
-START e chegada são confirmados por reconhecimento de imagem. A retirada é confirmada pelo usuário. O modo demonstração é separado e oferece botões de checkpoint para testar as regras sem câmera.
+## Execução nativa
+
+O README contém os comandos para gerar e instalar o APK. O perfil `development` em `eas.json` produz o aplicativo para dispositivo físico pelo EAS. Depois de instalar o NexWay, `npm start` inicia o Metro para o development client; use `npm run start:tunnel` quando a rede bloquear a conexão direta. Alterações em módulos nativos ou plugins exigem novo build.
+
+`.easignore` exclui `android/` e `ios/` gerados localmente para o EAS criar projetos nativos a partir da configuração atual. Não há IPA gerado nem teste em iPhone.
 
 ## Validação física
 
-1. Imprimir `assets/markers/print.html` em tamanho real. A imagem de cada target deve medir 20 × 20 cm, sem ajuste automático de escala.
-2. Instalar o build em iPhone compatível com ARKit ou Android compatível com ARCore.
-3. Selecionar MAT-001 e reconhecer RACK-A antes de START: deve indicar erro sem avançar.
-4. Reconhecer START-01, depois RACK-B: deve manter o destino RACK-A.
-5. Reconhecer RACK-A e conferir o setor/prateleira ancorado. Confirmar retirada e compartilhar métricas.
-6. Repetir com os demais materiais. Testar reconhecimento simultâneo de START/estante, perda/retomada do tracking e baixa iluminação.
-7. Testar permissão negada, alteração da permissão nos ajustes, retomada do aplicativo e alternância de abas.
-8. Conferir legibilidade e orientação do texto com o marcador na posição real de uso. Registrar vídeo, aparelho, sistema e versão do build.
+Siga o roteiro de [START-AR.md](START-AR.md): imprimir os marcadores em 20 × 20 cm, instalar o APK debug, selecionar o material, reconhecer o START olhando para o corredor principal, seguir os checkpoints e reconhecer o rack. Registre aparelho, sistema e versão do build.
 
-Os PNGs são candidatos de teste: sua qualidade no reconhecimento ainda não foi medida. Exportações JavaScript e geração dos projetos nativos não comprovam estabilidade do tracking nem substituem um build e teste no aparelho.
+Os PNGs dos marcadores são candidatos de teste: sua qualidade no reconhecimento ainda não foi medida. Exportações JavaScript não comprovam a estabilidade do tracking.
 
 ## Armazém virtual e limites atuais
 
-A planta fictícia tem três estantes e entrada START. Selecionar um material destaca estante, setor e prateleira. O caminho é calculado em uma grade, evitando obstáculos, com indicador animado, pausa, retomada e reinício. Trocar o material reinicia o percurso.
-
-O mapa virtual não calibra a cena AR nem define coordenadas do armazém real. Setas espaciais, relocalização global e delimitação 3D precisa da prateleira dependem de layout e calibração física. O destaque atual é textual e ancorado ao marcador, conforme o fallback previsto no PDF.
-
-O baseline WL04 não foi fornecido e sua validação permanece pendente. O catálogo é fictício. Métricas e sessão ficam em memória até serem compartilhadas; fechar o aplicativo perde os registros não exportados. O tempo total vai da seleção até a confirmação da retirada; a chegada tem timestamp separado.
+A planta fictícia tem três estantes e entrada START. O caminho é calculado em uma grade, evitando obstáculos, com indicador animado, pausa, retomada e reinício. O mapa virtual não define coordenadas do armazém real; escala e tolerância precisam ser ajustadas antes de uso operacional. O catálogo é fictício e a sessão fica em memória.
 
 ## Verificações
 
-`npm run verify` executa TypeScript e os testes de busca, sessão, prioridade de marcadores e caminhos da planta. A automação também exporta bundles web, iOS e Android. `npm run doctor` verifica a configuração e a compatibilidade do SDK.
+`npm run verify` executa TypeScript e os 29 testes automatizados. A automação também exporta bundles web, iOS e Android. `npm run doctor` verifica a configuração e a compatibilidade do SDK.
 
-A árvore Expo/ViroReact apresenta alertas de dependências herdadas relacionados a `braces` e `node-forge`. Reavaliar atualizações compatíveis antes da distribuição; não forçar versões fora das faixas suportadas para contornar esses alertas.
+A árvore Expo/ViroReact apresenta alertas de dependências herdadas (`braces`, `node-forge`). Reavaliar atualizações compatíveis antes da distribuição; não forçar versões fora das faixas suportadas.
 
+## Validação de chegada após checkpoints
+
+A sessão guarda o progresso da navegação. O reducer só aceita chegada pelo rack correto com START calibrado e todos os checkpoints concluídos em ordem. Reconhecimento antecipado não conclui a sessão. Perda de tracking, pose inválida, salto ou troca de material reiniciam a navegação. A chegada permanece idempotente. Typecheck aprovado e 29 testes automatizados aprovados nesta correção; o BUILD_EVIDENCE anterior permanece como registro histórico, sem representar um novo APK desta versão.
+
+## Rastreabilidade de execução
+
+Versão funcional de referência: 7acefc534bc52615189aa3b9bb4f6e8ae9160ad8. O APK é um Development Build e o JS/TS é servido pelo Metro. O SHA-256 do APK comprova a integridade do shell nativo, não a versão JS em execução. Registrar em conjunto commit Git, working tree limpa, tipos e testes, build e instalação, Metro iniciado nessa mesma versão e validação física com aparelho e Android identificados. Não estender automaticamente a evidência histórica de f2e1c8f e 24 testes à correção atual de 29 testes.
+
+O artigo atual é [NexWay_Artigo_Final_V5.docx](documents/NexWay_Artigo_Final_V5.docx), preservado como fornecido. Seu recorte histórico e a correção posterior estão esclarecidos no [índice documental](documents/LEIA-ME.txt). A revisão atual não executou Metro nem validação física.

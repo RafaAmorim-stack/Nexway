@@ -1,0 +1,10 @@
+Documentos acadêmicos do NexWay — equipe NEXUS.
+
+- NexWay_Artigo_Final_V5.docx: versão acadêmica mais atual fornecida pela equipe, incorporada sem edição. Substitui o artigo anterior do pacote README.
+- ../../NexWay_Divisao_Desenvolvimento_Leonardo_Rafael.pdf: divisão técnica de tarefas, mantida na raiz para preservar os links existentes.
+
+Recorte histórico e estado atual
+
+A V5 descreve o commit f2e1c8f64edbc95b048caf2964bd6e298f33444a e 24 testes. A correção posterior está no commit 7acefc534bc52615189aa3b9bb4f6e8ae9160ad8, com typecheck aprovado e 29/29 testes: checkpoints devem ser concluídos em ordem antes da validação do rack. Consultar README.md e docs/DEVELOPMENT.md para o estado atual.
+
+O APK é um Development Build e recebe o JS/TS pelo Metro. O SHA-256 do APK sozinho não identifica o JavaScript executado. Associar commit Git, working tree limpa, testes, build, execução Metro da mesma versão e validação física. BUILD_EVIDENCE.md é preservado como registro histórico; não comprova automaticamente a execução física da correção posterior. A equipe acadêmica deve considerar essas diferenças ao revisar o artigo, sem reatribuir evidências antigas à versão nova.

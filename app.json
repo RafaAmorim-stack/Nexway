@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Nexway",
-    "slug": "nexway",
+    "slug": "rafaelneway",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -40,6 +40,12 @@
         "ITSAppUsesNonExemptEncryption": false
       }
     },
-    "scheme": "nexway"
+    "scheme": "nexway",
+    "owner": "rafaelsouzaamorims-team",
+    "extra": {
+      "eas": {
+        "projectId": "88afa177-e775-492b-810c-659aa093dd3c"
+      }
+    }
   }
 }

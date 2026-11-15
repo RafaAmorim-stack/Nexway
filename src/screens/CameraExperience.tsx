@@ -9,11 +9,11 @@ export default function CameraExperience({ session, onStartRecognized, onRackRec
   const status = materialStatus(session);
   const route = materialRoute(session);
   return <ScrollView contentContainerStyle={styles.content}>
-    <Text style={styles.title}>Câmera AR · Estante destino</Text>
-    <Text style={styles.description}>Reconheça START-01 e depois a estante destino. Imprima as imagens em 20 × 20 cm.</Text>
+    <Text style={styles.title}>Câmera AR · Endereço destino</Text>
+    <Text style={styles.description}>Reconheça o START no chão, percorra os checkpoints e valide a etiqueta do endereço selecionado.</Text>
     <View style={styles.status}>
       <Text accessibilityLiveRegion="polite" style={styles.title}>{status.status}</Text>
-      <Text style={styles.description}>{status.material}</Text><Text style={styles.title}>{status.destination}</Text>
+      <Text style={styles.description}>{status.material}</Text><Text style={styles.description}>{session.item.location.label} · Módulo {session.item.location.module}</Text><Text style={styles.title}>{status.destination}</Text>
     </View>
     {session.recognizedRack && <View accessibilityLiveRegion="polite">
       <Text style={styles.title}>Esperado: {session.item.location.id}</Text>

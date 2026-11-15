@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, useWindowDimensions } from 'react-native';
 import { items, searchItems, type Item, type Location } from '../data/catalog';
 import { WarehouseMap } from '../components/WarehouseMap';
-import { instructionAt, routeToRack } from '../warehouse/layout';
+import { instructionAt, routeToDestination } from '../warehouse/layout';
 
 type Playback = 'ready' | 'running' | 'paused' | 'arrived';
 export default function WarehouseSimulation({ selected, onSelect }: { selected: Item; onSelect: (item: Item) => void }) {
@@ -11,7 +11,7 @@ export default function WarehouseSimulation({ selected, onSelect }: { selected: 
   const [playback, setPlayback] = useState<Playback>('ready');
   const { width } = useWindowDimensions();
   const wide = width >= 900;
-  const route = useMemo(() => routeToRack(selected.location.id), [selected.location.id]);
+  const route = useMemo(() => routeToDestination(selected.location.id), [selected.location.id]);
   const results = searchItems(query);
   useEffect(() => {
     if (playback !== 'running') return;
@@ -31,28 +31,28 @@ export default function WarehouseSimulation({ selected, onSelect }: { selected: 
   const arrived = playback === 'arrived';
   const progress = route.length > 1 ? step / (route.length - 1) : 0;
   return <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
-    <View style={styles.intro}><View style={styles.sectionHead}><Text style={styles.title}>Localização de materiais</Text><Text style={styles.environment}>Ambiente de simulação</Text></View><Text style={styles.description}>Consulte a posição do material e simule o percurso até a estante.</Text></View>
+    <View style={styles.intro}><View style={styles.sectionHead}><Text style={styles.title}>Localização de posições</Text><Text style={styles.environment}>Huawei · validação técnica</Text></View><Text style={styles.description}>Selecione um endereço e simule a rota no ambiente físico mapeado.</Text></View>
     <View style={[styles.layout, wide && styles.wide]}>
       <View style={[styles.catalog, wide && styles.catalogWide]}>
-        <View style={styles.sectionHead}><Text style={styles.heading}>Materiais</Text><Text style={styles.count}>{items.length} disponíveis</Text></View>
-        <TextInput accessibilityLabel="Buscar material" style={styles.input} placeholder="Buscar por nome ou código" placeholderTextColor="#7a858c" value={query} onChangeText={setQuery} />
+        <View style={styles.sectionHead}><Text style={styles.heading}>Endereços</Text><Text style={styles.count}>{items.length} disponíveis</Text></View>
+        <TextInput accessibilityLabel="Buscar endereço" style={styles.input} placeholder="Buscar endereço, ex.: SF01012B" placeholderTextColor="#7a858c" value={query} onChangeText={setQuery} />
         <View style={styles.itemList}>
           {results.map(item => {
             const active = item.code === selected.code;
             return <Pressable key={item.code} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={`Selecionar ${item.description}`} onPress={() => select(item)} style={[styles.item, active && styles.selectedItem]}>
               <Text style={styles.code}>{item.code}{active ? '  /  Selecionado' : ''}</Text><Text style={styles.itemName}>{item.description}</Text>
-              <Text style={styles.small}>{item.location.label} · Setor {item.location.sector} · P{item.location.shelf}</Text>
+              <Text style={styles.small}>{item.location.label} · Módulo {item.location.module}</Text>
             </Pressable>;
           })}
-          {results.length === 0 && <Text style={styles.description}>Nenhum material encontrado. Tente outro nome ou código.</Text>}
+          {results.length === 0 && <Text style={styles.description}>Nenhum endereço encontrado. Confira o código.</Text>}
         </View>
-        <View style={styles.note}><Text style={styles.small}>Dados ilustrativos. Selecione um material na lista ou uma estante na planta.</Text></View>
+        <View style={styles.note}><Text style={styles.small}>Quatro posições confirmadas. Nomes dos materiais ainda não cadastrados.</Text></View>
       </View>
       <View style={styles.workspace}>
         <View style={styles.destinationHeader}><View style={styles.destinationCopy}><Text style={styles.eyebrow}>Destino</Text><Text style={styles.materialTitle}>{selected.description}</Text></View><View style={styles.badge}><Text style={styles.badgeText}>{selected.location.id}</Text></View></View>
         <WarehouseMap item={selected} route={route} step={step} onSelectRack={selectRack} />
         <View style={styles.controls}>
-          <View accessibilityLiveRegion="polite" style={styles.instruction}><Text style={styles.heading}>{arrived ? 'Destino alcançado' : playback === 'ready' ? 'Aguardando início' : playback === 'paused' ? 'Simulação pausada' : 'Percurso em andamento'}</Text><Text style={styles.description}>{playback === 'ready' ? `Saída pela entrada START. Destino: ${selected.location.label}.` : instructionAt(route, step, selected)}</Text></View>
+          <View accessibilityLiveRegion="polite" style={styles.instruction}><Text style={styles.heading}>{arrived ? 'Destino alcançado' : playback === 'ready' ? 'Aguardando início' : playback === 'paused' ? 'Simulação pausada' : 'Percurso em andamento'}</Text><Text style={styles.description}>{playback === 'ready' ? `Saída pela entrada START. Destino: ${selected.code}.` : instructionAt(route, step, selected)}</Text></View>
           <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${progress * 100}%` }]} /></View>
           <View style={styles.actions}><Pressable accessibilityRole="button" onPress={() => {
             if (playback === 'running') setPlayback('paused');
@@ -63,15 +63,11 @@ export default function WarehouseSimulation({ selected, onSelect }: { selected: 
         </View>
         <View style={[styles.detail, arrived && styles.arrivedDetail]}>
           <View style={styles.sectionHead}><Text style={styles.heading}>Posição na estante</Text><Text style={styles.code}>{selected.location.label}</Text></View>
-          <Text style={styles.description}>Vista frontal. Compartimento do material em destaque.</Text>
-          <View style={styles.shelfGrid}>
-            <View style={styles.shelfRow}><Text style={styles.levelLabel}>NÍVEL</Text>{['01', '02', '03'].map(sector => <Text key={sector} style={styles.sectorLabel}>SETOR {sector}</Text>)}</View>
-            {[3, 2, 1].map(level => <View key={level} style={styles.shelfRow}><Text style={styles.levelLabel}>P{level}</Text>{['01', '02', '03'].map(sector => {
-              const target = selected.location.sector === sector && selected.location.shelf === level;
-              return <View key={sector} accessible accessibilityLabel={`Setor ${sector}, prateleira ${level}${target ? `: ${selected.description}` : ''}`} style={[styles.compartment, target && styles.targetCompartment]}><View style={[styles.box, target && styles.targetBox]}><View style={[styles.boxSeam, target && styles.targetSeam]} /></View><Text style={[styles.compartmentText, target && styles.targetText]}>{target ? selected.code : '—'}</Text></View>;
-            })}</View>)}
-          </View>
-          <Text style={styles.locationSummary}>{selected.location.label} → Setor {selected.location.sector} → Prateleira {selected.location.shelf}</Text>
+          <Text style={styles.description}>Quatro módulos de 3 m. O endereço selecionado aparece em destaque.</Text>
+          <View style={styles.shelfRow}>{[1, 2, 3, 4].map(module => <View key={module} style={[styles.compartment, module === selected.location.module && styles.targetCompartment]}>
+            <Text style={styles.small}>Módulo {module}</Text><Text style={styles.small}>3 m</Text>
+          </View>)}</View>
+          <Text style={styles.locationSummary}>{selected.code} · {selected.location.label} · Módulo {selected.location.module}</Text>
         </View>
       </View>
     </View>

@@ -1,6 +1,7 @@
 import type { Checkpoint } from './materialRoute';
 import { warehouse } from '../warehouse/layout';
-export const METERS_PER_CELL = 1;
+import { METERS_PER_CELL } from './warehouseLayout';
+export { METERS_PER_CELL } from './warehouseLayout';
 export const CHECKPOINT_TOLERANCE = 0.45;
 export type Pose = { position: readonly number[]; forward: readonly number[] };
 export type RelativePoint = { x: number; z: number };
@@ -32,7 +33,7 @@ export function relativeHeading(origin: Pose, pose: Pose): number {
   return Math.atan2(pose.forward[0]! * rx + pose.forward[2]! * rz, pose.forward[0]! * fx + pose.forward[2]! * fz);
 }
 export function checkpointPosition(checkpoint: Checkpoint): RelativePoint {
-  return { x: (checkpoint.point.x - warehouse.entrance.x) * METERS_PER_CELL, z: (warehouse.entrance.y - checkpoint.point.y) * METERS_PER_CELL };
+  return { x: (checkpoint.point.x - warehouse.entrance.x) * METERS_PER_CELL, z: (checkpoint.point.y - warehouse.entrance.y) * METERS_PER_CELL };
 }
 export function distanceBetween(a: RelativePoint, b: RelativePoint): number {
   return Math.hypot(b.x - a.x, b.z - a.z);

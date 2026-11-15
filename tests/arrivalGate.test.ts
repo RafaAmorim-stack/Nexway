@@ -30,31 +30,31 @@ test('último checkpoint libera rack já visível; chegada é registrada uma ún
   const s = completeRoute(initialMaterialSession());
   assert.equal(canValidateRack(s), true);
   assert.equal(s.arrivedAt, null);
-  assert.equal(materialMarker(s, ['RACK-A']), 'RACK-A');
-  const arrived = reduce(s, { type: 'recognize-rack', rack: 'RACK-A', at: 10 });
+  assert.equal(materialMarker(s, ['SF01001A']), 'SF01001A');
+  const arrived = reduce(s, { type: 'recognize-rack', rack: 'SF01001A', at: 10 });
   assert.equal(arrived.arrivedAt, 10);
-  assert.equal(reduce(arrived, { type: 'recognize-rack', rack: 'RACK-A', at: 20 }), arrived);
+  assert.equal(reduce(arrived, { type: 'recognize-rack', rack: 'SF01001A', at: 20 }), arrived);
   assert.equal(reduce(arrived, { type: 'navigation-lost' }), arrived);
 });
 
 test('rack incorreto não registra chegada antes nem depois dos checkpoints', () => {
   const started = reduce(initialMaterialSession(), { type: 'calibrate', pose: origin });
   for (const s of [started, completeRoute(initialMaterialSession())]) {
-    const wrong = reduce(s, { type: 'recognize-rack', rack: 'RACK-B', at: 1 });
+    const wrong = reduce(s, { type: 'recognize-rack', rack: 'SF01009B', at: 1 });
     assert.equal(wrong.arrivedAt, null);
-    assert.equal(wrong.recognizedRack, 'RACK-B');
+    assert.equal(wrong.recognizedRack, 'SF01009B');
   }
 });
 
 test('não permite pular checkpoint mesmo chegando gradualmente a um checkpoint posterior', () => {
   let s = reduce(initialMaterialSession(), { type: 'calibrate', pose: origin });
-  // Desvia do primeiro checkpoint (0,3) e alcança o segundo (1,3).
-  for (const [x, z] of [[1, 0], [1, 1], [1, 2], [1, 3]]) {
+  // Desvia do primeiro checkpoint (0,2) e alcança o destino (-5,2).
+  for (const [x, z] of [[-1, 0], [-2, 0], [-3, 0], [-4, 0], [-5, 0], [-5, 1], [-5, 2]]) {
     s = reduce(s, { type: 'pose', pose: poseAt(x!, z!) });
   }
   assert.equal(s.navigation.nextIndex, 1);
   assert.equal(canValidateRack(s), false);
-  assert.equal(reduce(s, { type: 'recognize-rack', rack: 'RACK-A', at: 1 }).arrivedAt, null);
+  assert.equal(reduce(s, { type: 'recognize-rack', rack: 'SF01001A', at: 1 }).arrivedAt, null);
 });
 
 test('perda de tracking, pose inválida, salto e troca de material revogam liberação do rack', () => {
@@ -63,7 +63,7 @@ test('perda de tracking, pose inválida, salto e troca de material revogam liber
     { type: 'navigation-lost' } as const,
     { type: 'pose', pose: poseAt(NaN, 0) } as const,
     { type: 'pose', pose: poseAt(100, 100) } as const,
-    { type: 'select', code: 'MAT-002' } as const,
+    { type: 'select', code: 'SF01009B' } as const,
   ]) {
     const reset = reduce(ready, action);
     assert.equal(canValidateRack(reset), false);

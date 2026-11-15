@@ -40,7 +40,7 @@ export default function ViroExperience({ session, onStartRecognized, onRackRecog
     }, 500);
     return () => clearInterval(timer);
   }, [loseNavigation]);
-  const orientation = session.arrivedAt !== null ? 'Chegada validada pelo rack.' : !navigation.origin ? 'Orientação suspensa. Retorne ao START, olhe para o corredor principal e reconheça o marcador.' : next ? next.arrow + ' ' + next.direction + ' · ' + next.checkpoint.label + ' · ' + next.distance.toFixed(1) + ' m' : 'Checkpoints percorridos. Reconheça ' + session.item.location.id + ' para validar a chegada.';
+  const orientation = session.arrivedAt !== null ? 'Chegada validada pelo endereço.' : !navigation.origin ? 'Orientação suspensa. Posicione-se sobre o START, voltado para a prateleira A. Incline a câmera para enquadrar o marcador no chão sem girar para os lados.' : next ? next.arrow + ' ' + next.direction + ' · ' + next.checkpoint.label + ' · ' + next.distance.toFixed(1) + ' m' : 'Checkpoints percorridos. Reconheça ' + session.item.location.id + ' para validar a chegada.';
   const reportTracking = useCallback((message: string) => setTracking(message), []);
   useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
@@ -74,12 +74,12 @@ export default function ViroExperience({ session, onStartRecognized, onRackRecog
     <View style={styles.instructions}>
       <Text style={styles.heading}>Depuração da navegação relativa</Text>
       <Text style={styles.description}>X atual: {navigation.position?.x.toFixed(2) ?? '—'} m · Z atual: {navigation.position?.z.toFixed(2) ?? '—'} m</Text>
-      <Text style={styles.description}>Próximo checkpoint: {next?.checkpoint.label ?? (navigation.origin ? 'Aguardando validação do rack' : 'Aguardando START')}</Text>
+      <Text style={styles.description}>Próximo checkpoint: {next?.checkpoint.label ?? (navigation.origin ? 'Aguardando etiqueta do endereço' : 'Aguardando START')}</Text>
       <Text style={styles.description}>Distância: {next ? next.distance.toFixed(2) + ' m' : '—'} · Direção: {next ? next.direction + ' (' + next.angle.toFixed(0) + '°)' : '—'}</Text>
-      <Text style={styles.caption}>Escala de teste: {METERS_PER_CELL} m/célula · tolerância: {CHECKPOINT_TOLERANCE} m. X: direita; Z: frente a partir do START.</Text>
+      <Text style={styles.caption}>Escala do ambiente: {METERS_PER_CELL} m/célula · tolerância: {CHECKPOINT_TOLERANCE} m. X: direita; Z: frente a partir do START.</Text>
       {!!tracking && <Text accessibilityLiveRegion="polite" style={styles.warning}>{tracking}</Text>}
       <Text style={styles.description}>{orientation}</Text>
-      <Text style={styles.caption}>ViroReact · reconhecimento por imagem. Marcadores impressos com 20 × 20 cm.</Text>
+      <Text style={styles.caption}>ViroReact · reconhecimento por imagem. Etiquetas reais. Larguras nominais de 20 cm: conferir e ajustar antes do teste físico.</Text>
     </View>
   </View>;
 }

@@ -1,3 +1,4 @@
+import { START_TARGET } from '../navigation/warehouseLayout';
 import type { Item, MarkerId } from '../data/catalog';
 export type Phase = 'awaiting-start' | 'navigating' | 'arrived' | 'completed';
 export type NavigationEvent = { type: 'start' | 'checkpoint' | 'wrong-marker' | 'arrival' | 'complete'; at: number; marker?: MarkerId };
@@ -7,8 +8,8 @@ export function startSession(item: Item, now = Date.now()): Session {
 }
 export function recognize(state: Session, marker: MarkerId, now = Date.now()): Session {
   if (state.phase === 'completed' || state.phase === 'arrived') return state;
-  const expected = state.phase === 'awaiting-start' ? 'START-01' : state.item.location.id;
-  if (state.phase === 'navigating' && marker === 'START-01') return state;
+  const expected = state.phase === 'awaiting-start' ? START_TARGET : state.item.location.id;
+  if (state.phase === 'navigating' && marker === START_TARGET) return state;
   if (marker !== expected) {
     if (state.events.at(-1)?.type === 'wrong-marker' && state.events.at(-1)?.marker === marker) return state;
     return { ...state, error: `Marcador ${marker} incorreto. Procure ${expected}.`, events: [...state.events, { type: 'wrong-marker', marker, at: now }] };

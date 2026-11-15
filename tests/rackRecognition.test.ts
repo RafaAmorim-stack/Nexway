@@ -6,12 +6,12 @@ import { initialMaterialSession, materialSessionReducer as reduce, materialStatu
 import { materialMarker } from '../src/ar/materialMarker';
 test('racks antes de START não avançam; START repetido é idempotente', () => {
   const initial = initialMaterialSession();
-  assert.equal(reduce(initial, { type: 'recognize-rack', rack: 'RACK-A', at: 1 }), initial);
-  assert.equal(materialMarker(initial, ['RACK-A']), undefined);
+  assert.equal(reduce(initial, { type: 'recognize-rack', rack: 'SF01001A', at: 1 }), initial);
+  assert.equal(materialMarker(initial, ['SF01001A']), undefined);
   const started = reduce(initial, { type: 'recognize-start' });
   assert.equal(reduce(started, { type: 'recognize-start' }), started);
   assert.equal(materialMarker(started, []), undefined);
-  assert.equal(materialMarker(started, ['START-01']), undefined);
+  assert.equal(materialMarker(started, ['START_HUAWEI']), undefined);
 });
 test('cada material rejeita os outros racks e registra chegada uma única vez no destino', () => {
   for (const item of items) {
@@ -19,17 +19,17 @@ test('cada material rejeita os outros racks e registra chegada uma única vez no
     session = reduce(session, { type: 'recognize-start' });
     for (const other of items.filter(candidate => candidate !== item)) {
       session = reduce(session, { type: 'recognize-rack', rack: other.location.id, at: 10 });
-      assert.equal(materialStatus(session).status, 'Estante incorreta');
+      assert.equal(materialStatus(session).status, 'Endereço incorreto');
       assert.equal(session.recognizedRack, other.location.id);
       assert.equal(session.arrivedAt, null);
       assert.equal(session.item, item);
       assert.equal(reduce(session, { type: 'recognize-rack', rack: other.location.id, at: 11 }), session);
     }
     session = completeRoute(session);
-    const visible: MarkerId[] = ['RACK-A', 'RACK-B', 'RACK-C', 'START-01'];
+    const visible: MarkerId[] = ['SF01001A', 'SF01014A', 'SF01009B', 'SF01012B', 'START_HUAWEI'];
     assert.equal(materialMarker(session, visible), item.location.id);
     session = reduce(session, { type: 'recognize-rack', rack: item.location.id, at: 20 });
-    assert.equal(materialStatus(session).status, 'Estante correta reconhecida');
+    assert.equal(materialStatus(session).status, 'Chegada validada');
     assert.equal(session.arrivedAt, 20);
     assert.equal(materialMarker(session, visible), undefined);
     for (const rack of items) assert.equal(reduce(session, { type: 'recognize-rack', rack: rack.location.id, at: 30 }), session);
@@ -42,8 +42,8 @@ test('cada material rejeita os outros racks e registra chegada uma única vez no
 });
 test('rack já visível é processado após START e perda não gera reconhecimento', () => {
   const initial = initialMaterialSession();
-  assert.equal(materialMarker(initial, ['RACK-A', 'START-01']), 'START-01');
+  assert.equal(materialMarker(initial, ['SF01001A', 'START_HUAWEI']), 'START_HUAWEI');
   const started = completeRoute(initial);
-  assert.equal(materialMarker(started, ['RACK-A', 'START-01']), 'RACK-A');
+  assert.equal(materialMarker(started, ['SF01001A', 'START_HUAWEI']), 'SF01001A');
   assert.equal(materialMarker(started, []), undefined);
 });

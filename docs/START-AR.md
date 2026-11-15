@@ -1,54 +1,56 @@
-# Marco 5 — orientação relativa com Viro/ARCore
+# Huawei — validação técnica no Xiaomi
 
-Versões preservadas: Expo ~57.0.31, React Native 0.86.3 e @reactvision/react-viro 3.0.3.
+Fluxo obrigatório: selecionar endereço → reconhecer START → percorrer checkpoints em ordem → reconhecer endereço correto → registrar chegada uma vez.
 
-## Fluxo
+## Preparação da versão
 
-Selecione um material no Armazém virtual. Na Câmera AR, reconheça START-01 em tracking normal. O app captura a posição e o vetor frontal da câmera nesse instante, calcula a rota local e passa a acompanhar deslocamento e direção com onCameraTransformUpdate do Viro. Não há markers intermediários. O rack correto continua sendo a única validação da chegada; o rack errado mostra esperado/reconhecido sem concluir.
+1. No checkout do NexWay, execute git fetch origin e git switch feat/huawei-warehouse-layout. Confira git log -1 e git status --porcelain (vazio antes do teste).
+2. Use Node 22.13+ e npm ci. Execute npm run verify, git diff --check e npm run export:android. Export Android produz bundle e assets, não instala nem gera APK.
+3. Instale/abra o Development Build compatível com as dependências atuais. Expo Go não funciona. Se precisar compilar: npm run build:android (EAS já vinculado) ou npx expo prebuild --platform android e android\gradlew.bat assembleDebug. A instalação via ADB está detalhada no README.
+4. Execute npm start **neste checkout/branch**, abra esse servidor no app Xiaomi, na mesma rede; npm run start:tunnel é alternativa. O QR do Metro é apenas conexão com o servidor, não o START.
+5. Registre modelo Xiaomi, Android, commit, APK e servidor Metro usados. Evidência antiga não valida este layout automaticamente.
 
-O ponto onde o usuário fica ao reconhecer START é a origem relativa (0,0). A direção horizontal da câmera nessa captura representa a frente do mapa. Portanto, reconheça o START a partir de um ponto de parada demarcado, olhando para o corredor principal. A rotação do desenho do marker não alinha o mapa automaticamente. Não calibre olhando de lado ou para trás.
+## Preparação física
 
-A câmera fornece coordenadas em metros no referencial da sessão AR. A lógica subtrai a posição inicial e projeta o deslocamento nos eixos horizontais frontal e direito capturados no START. X positivo aponta para a direita; Z positivo aponta para a frente. A altura não participa da navegação. A direção relativa considera também para onde a câmera está olhando agora, com ângulo positivo à direita e negativo à esquerda.
+- Use as cinco etiquetas reais fotografadas, sem imprimir o antigo print.html A/B/C. START circular no piso; SF01001A e SF01014A em A; SF01009B e SF01012B em B.
+- Meça a largura externa de cada região usada no recorte e ajuste targetPhysicalWidths em src/ar/huaweiTargets.ts. Os 20 cm atuais são nominais, não aferidos. Não altere a escala confirmada de 1 m/célula para compensar um target mal configurado.
+- Reproduza o esboço: START (6,0); A 12×1 m em Z=3..4; corredor Z=4..6; B 12×1 m em Z=6..7. Módulos 1/2/3/4 ocupam faixas X=0..3/3..6/6..9/9..12.
+- Confira que as extremidades da A utilizadas pelo plano estão livres. O aplicativo conhece as prateleiras, mas não obstáculos móveis.
+- MarkerPosition é o centro visual do módulo. AccessPoint é a célula livre de aproximação, não a posição da etiqueta na estrutura.
 
-## Mapa e parâmetros locais
+| Destino | Marker X/Z | Acesso X/Z | Referência |
+|---|---|---|---|
+| SF01001A | 1,5 / 3 | 1 / 2 | A, módulo 1 |
+| SF01014A | 7,5 / 3 | 7 / 2 | A, módulo 3 |
+| SF01009B | 1,5 / 6 | 1 / 5 | B, módulo 1 |
+| SF01012B | 7,5 / 6 | 7 / 5 | B, módulo 3 |
 
-A grade é de 15 × 13 células. x cresce para a direita; y para baixo. START = (7,11). Os acessos são RACK-A = (4,4), RACK-B = (8,4), RACK-C = (12,4), fora das áreas das estantes. Paredes bloqueiam o contorno; os retângulos bloqueados são A: x=2..3/y=2..7, B: x=6..7/y=2..7, C: x=10..11/y=2..7. A busca em largura mantém a rota nas células livres, sem diagonais.
+## Calibração do START no chão
 
-Parâmetros em src/navigation/relativeNavigation.ts:
+A origem relativa (0,0) é a **pose horizontal da câmera no reconhecimento**. A direção horizontal da câmera define a frente do mapa; a rotação da foto não alinha o mapa automaticamente. Fique no ponto demarcado START, voltado para A, e incline a câmera para enquadrar o marcador sem girar lateralmente. Evite apontar exatamente na vertical: não há direção horizontal válida nesse caso. Mantenha a projeção horizontal do telefone tão próxima do START quanto possível; afastar-se do ponto durante a captura introduz deslocamento na rota.
 
-- METERS_PER_CELL = 1: escala inicial de demonstração, 1 metro por célula.
-- CHECKPOINT_TOLERANCE = 0.45: avança ao ficar a até 45 cm do próximo checkpoint.
-- A pose é processada aproximadamente a cada 150 ms; mais de 1,5 s sem pose causa suspensão, verificada a cada 500 ms.
-- Poses inválidas, direção quase vertical ou salto superior a 2 m entre amostras descartam a calibração.
+O mapa usa X positivo à direita e Z positivo em direção às prateleiras. O código usa y para Z no mapa 2D, sem inverter o sinal na conversão para tracking. Altura não participa da navegação. orientation: Up do target é a orientação da imagem, não a orientação do piso.
 
-As mudanças de direção formam os checkpoints ordenados. Para RACK-B: START (0,0 m) → Corredor principal (0,3 m) → Corredor B (1,3 m) → RACK-B (1,7 m). RACK-A inclui um acesso lateral antes do rack. Só o próximo checkpoint pode avançar; o app não pula para outro por proximidade. A distância é horizontal e aproximada. Ao percorrer todos os checkpoints, o app pede o marker do rack e não conclui sozinho.
+## Casos a executar
 
-A sobreposição da câmera mostra seta 2D, direção, próximo checkpoint e distância. A área de depuração mostra X, Z, distância e ângulo. A planta continua mostrando o plano; não desenha uma posição ao vivo. Os parâmetros e o mapa precisam ser ajustados às dimensões reais antes de uso operacional. Não há colisão física nem prevenção de obstáculos novos; o cálculo evita apenas os bloqueios conhecidos do mapa.
+1. Busque SF01001A e selecione. Confira A/M1 na lista e destaque apenas desse módulo. Repita busca/seleção dos quatro endereços.
+2. Abra a Câmera AR. Antes de START, mostre qualquer etiqueta de destino: não deve liberar navegação nem chegada.
+3. Reconheça START com tracking normal. Confira X≈0 e Z≈0, destino correto e rota. Para os quatro planos atuais o primeiro checkpoint fica em (6,2), isto é, (0,2) relativo ao START.
+4. Mostre o endereço correto imediatamente após START. **Não pode registrar chegada.**
+5. Caminhe lentamente em direção ao primeiro checkpoint. Z deve aumentar, distância diminuir. Gire sem andar: a direção muda, X/Z ficam aproximadamente estáveis. A tolerância de avanço é 0,45 m.
+6. Siga os próximos checkpoints na ordem apresentada. Não há etiquetas intermediárias: checkpoints são as curvas e o acesso final do BFS. Não pule a curva mesmo que veja a etiqueta de destino.
+7. Para SF01009B, confira contorno pela esquerda da A. Para SF01012B, confira contorno pela direita. Nenhum segmento pode entrar em A ou B. Os pontos exatos aparecem na tela; não caminhe através de estoque para alcançar um checkpoint.
+8. Ao concluir os checkpoints, confira pedido para validar a posição. Não deve registrar chegada apenas por proximidade.
+9. Com SF01012B selecionado, mostre SF01009B: deve indicar endereço incorreto, esperado SF01012B, reconhecido SF01009B. Mostre também SF01014A: não deve validar. Agora mostre SF01012B: chegada registrada uma única vez; repetir não altera horário.
+10. Repita o teste de etiqueta errada/correta e reconhecimento antecipado para todos os endereços, especialmente SF01001A versus SF01014A.
+11. Durante uma rota não concluída, provoque tracking limitado. A orientação deve suspender, limpar origem e pedir START. Mostrar somente o destino não recupera a sessão. Retorne ao START e refaça os checkpoints.
+12. Teste segundo plano e saída/retorno da aba AR. Antes da chegada, exigem START novamente. Troca de endereço reinicia tudo; uma chegada já validada fica registrada para a sessão até trocar de destino/reiniciar o app.
+13. Teste câmera negada e reativação nos ajustes. Observe iluminação/reflexos, reconhecimento dos quatro recortes semelhantes, desgaste da etiqueta SF01001A e resolução do START.
 
-## Perda de tracking e ciclo de vida
+## Parâmetros e registro
 
-Tracking limitado, ausência de poses, pose inválida ou mudança brusca de referencial suspendem a orientação. As coordenadas deixam de ser usadas e nenhum checkpoint avança enquanto não houver nova calibração. Volte ao ponto físico de START, olhe para o corredor principal e reconheça START novamente. A sequência de checkpoints reinicia; a chegada não é registrada pela recuperação do tracking.
+Escala: 1 m/célula. Tolerância: 0,45 m. Pose processada aproximadamente a cada 150 ms. Ausência de poses por mais de 1,5 s (verificação a cada 500 ms), direção horizontal inválida, tracking limitado ou salto >2 m descartam a calibração. A câmera é mantida durante a navegação ativa; sistema em segundo plano ou saída da aba desmonta a cena.
 
-Ir para segundo plano ou sair da aba AR descarta a calibração, pois a cena nativa pode ser recriada com outro referencial. Material, rota e uma chegada já validada ficam na sessão do App; a orientação pede novo START ao voltar. Trocar material limpa START/chegada e reinicia origem e checkpoints. Selecionar novamente o mesmo material, sem sair da câmera, preserva a sessão. Fechar o app reinicia tudo.
+Registre por destino: reconhecimento START, sequência seguida, etiqueta errada rejeitada, correta antecipada rejeitada, correta final aceita uma vez, perda/recalibração e diferença observada entre posições medidas e X/Z mostrado. Anexe evidências e versão. Não há resultados físicos desta implementação registrados neste documento.
 
-## Roteiro no Xiaomi
-
-1. Instale android/app/build/outputs/apk/debug/app-debug.apk. Execute npm start em C:\NexWay\nexway e abra o servidor no development client. Use a mesma rede ou npm run start:tunnel. O APK debug usa Metro; o QR de conexão não é um marker de navegação.
-2. Imprima assets/markers/print.html em tamanho real: cada imagem completa deve medir 20 × 20 cm, sem ajustar à página. Posicione START para ser reconhecido olhando na direção do corredor principal. Prepare um espaço livre e marque no chão o ponto de parada inicial e as posições métricas dos checkpoints da rota de demonstração.
-3. Selecione MAT-002 (RACK-B), abra Câmera AR e permita a câmera. Antes de START, confira que não há coordenadas ou orientação ativa. Mostrar um rack não deve iniciar navegação nem chegada.
-4. No ponto demarcado, olhe para o corredor principal e reconheça START. Confira material, RACK-B, rota e depuração X≈0/Z≈0. A seta deve apontar para frente, distância inicial≈3 m, próximo checkpoint Corredor principal.
-5. Retire START do campo de visão e caminhe lentamente 1 m em frente: Z deve aumentar aproximadamente 1 m e a distância diminuir. Não há necessidade de outro marker. Desloque o celular para a direita sem girar: X deve aumentar. Variações pequenas e deriva são possíveis.
-6. Gire no mesmo lugar para a direita: X/Z devem permanecer aproximadamente estáveis, mas a orientação para o checkpoint deve passar a pedir esquerda. Gire para a esquerda e para trás para conferir os demais sentidos. Mantenha o celular próximo da vertical e a câmera apontada adiante, não diretamente para o chão.
-7. Aproxime-se de (0,3 m). Dentro de 45 cm, o próximo checkpoint passa para Corredor B. A orientação deve indicar direita até (1,3 m), depois orientar para RACK-B em (1,7 m). Permanecer perto de um checkpoint já atingido não deve avançar os demais.
-8. Ao alcançar a posição final, confira Checkpoints percorridos e pedido para reconhecer RACK-B. Não deve aparecer Chegada registrada apenas por distância.
-9. Mostre RACK-A: confira Estante incorreta, Esperado: RACK-B e Reconhecido: RACK-A, sem chegada. Mostre RACK-B: deve registrar chegada uma única vez. Repetir o marker não muda o horário.
-10. Repita com MAT-001 e MAT-003. Trocar material exige START novamente e deve zerar X/Z e sequência após nova captura. As rotas terminam nos acessos dos respectivos racks, contornando os bloqueios lógicos.
-11. Durante o percurso, cubra a câmera ou reduza a iluminação para provocar tracking limitado. A orientação deve ser suspensa, sem avanço/chegada. Retorne ao ponto inicial e reconheça START olhando para frente: coordenadas e checkpoints reiniciam.
-12. Coloque o app em segundo plano e retorne; alterne as abas. A calibração deve ser descartada e pedir START novamente. Uma chegada já confirmada deve permanecer registrada. Teste câmera negada e retorno dos ajustes.
-13. Observe o comportamento em caminhada lenta, paradas e curvas. Registre diferenças entre as distâncias físicas medidas e as mostradas, oscilações de X/Z, perdas de tracking e eventuais viradas incorretas. Esses resultados são necessários para calibrar escala/tolerância no aparelho.
-
-## Verificação automatizada
-
-Execute npm run typecheck, npm test, npm run export:android e, dentro de android, .\gradlew.bat assembleDebug. Os testes verificam matemática, avanço ordenado, reinício, perda de tracking e validação final pelo rack. Eles não substituem a validação física do ARCore no Xiaomi.
-
-Não há Cloud Anchors, VPS, GPS indoor, backend, mapa 3D completo ou seta 3D. A orientação visual é uma sobreposição 2D alimentada pela pose local da câmera.
+A planta da câmera mostra o plano, não posição ao vivo. A orientação é sobreposição 2D e pode sofrer deriva. As margens laterais da grade são limites lógicos, não paredes aferidas. Os testes automatizados não comprovam precisão AR, discriminação das etiquetas no aparelho ou produtividade. Esta é **validação técnica em ambiente real de armazenagem**, não experimento com participantes.

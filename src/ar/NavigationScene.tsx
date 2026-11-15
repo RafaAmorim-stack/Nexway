@@ -1,3 +1,5 @@
+import { START_TARGET } from '../navigation/warehouseLayout';
+import { targetSources, targetPhysicalWidths } from './huaweiTargets';
 import React, { useContext, useRef } from 'react';
 import { ViroARScene, ViroARImageMarker, ViroARTrackingTargets } from '@reactvision/react-viro';
 import { ARContext } from './ARContext';
@@ -5,13 +7,10 @@ import { markers, type MarkerId } from '../data/catalog';
 import { materialMarker } from './materialMarker';
 import { canValidateRack } from '../navigation/materialSession';
 import { validPose, type Pose } from '../navigation/relativeNavigation';
-// A imagem impressa completa deve ter 20 cm de largura.
-ViroARTrackingTargets.createTargets({
-  'START-01': { source: require('../../assets/markers/START-01.png'), orientation: 'Up', physicalWidth: 0.2 },
-  'RACK-A': { source: require('../../assets/markers/RACK-A.png'), orientation: 'Up', physicalWidth: 0.2 },
-  'RACK-B': { source: require('../../assets/markers/RACK-B.png'), orientation: 'Up', physicalWidth: 0.2 },
-  'RACK-C': { source: require('../../assets/markers/RACK-C.png'), orientation: 'Up', physicalWidth: 0.2 },
-});
+// Up é a orientação dos pixels da imagem, não a instalação no piso/vertical.
+ViroARTrackingTargets.createTargets(Object.fromEntries(markers.map(id => [id, {
+  source: targetSources[id], orientation: 'Up', physicalWidth: targetPhysicalWidths[id],
+}])));
 export function NavigationScene() {
   const context = useContext(ARContext);
   const visible = useRef<MarkerId[]>([]);
@@ -21,14 +20,14 @@ export function NavigationScene() {
   function evaluate(pose: Pose) {
     if (!context || !normal.current || context.session.arrivedAt !== null) return;
     if (!context.navigationReady) {
-      if (visible.current.includes('START-01')) {
+      if (visible.current.includes(START_TARGET)) {
         context.onStartPose(pose);
         context.onStartRecognized();
       }
       return;
     }
     const marker = materialMarker(context.session, visible.current);
-    if (marker && marker !== 'START-01' && (marker !== context.session.item.location.id || canValidateRack(context.session))) context.onRackRecognized(marker);
+    if (marker && marker !== START_TARGET && (marker !== context.session.item.location.id || canValidateRack(context.session))) context.onRackRecognized(marker);
   }
   function visibility(id: MarkerId, tracked: boolean) {
     visible.current = tracked ? [...new Set([...visible.current, id])] : visible.current.filter(value => value !== id);

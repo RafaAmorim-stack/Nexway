@@ -19,13 +19,13 @@ test('posição relativa remove translação, ignora altura e respeita orientaç
 });
 test('distância euclidiana e conversão da grade para metros', () => {
   assert.equal(distanceBetween({ x: 0, z: 0 }, { x: 3, z: 4 }), 5);
-  assert.deepEqual(checkpointPosition(route.checkpoints[1]!), { x: 0, z: 3 });
+  assert.deepEqual(checkpointPosition(route.checkpoints[1]!), { x: 0, z: 2 });
   assert.equal(distanceBetween({ x: 2, z: 2 }, { x: 2, z: 2 }), 0);
 });
 test('escolhe próximo checkpoint e calcula direção no referencial atual da câmera', () => {
-  const state = reduce(initialNavigation('MAT-001'), { type: 'calibrate', pose: origin });
-  assert.equal(guidance(state, route.checkpoints)!.checkpoint.label, 'Corredor principal');
-  assert.equal(guidance(state, route.checkpoints)!.distance, 3);
+  const state = reduce(initialNavigation('SF01001A'), { type: 'calibrate', pose: origin });
+  assert.equal(guidance(state, route.checkpoints)!.checkpoint.label, 'Checkpoint 1');
+  assert.equal(guidance(state, route.checkpoints)!.distance, 2);
   assert.equal(guidance(state, route.checkpoints)!.direction, 'Siga em frente');
   assert.equal(guidance({ ...state, heading: Math.PI / 2 }, route.checkpoints)!.direction, 'Vire à esquerda');
   assert.equal(guidance({ ...state, heading: -Math.PI / 2 }, route.checkpoints)!.direction, 'Vire à direita');
@@ -33,18 +33,18 @@ test('escolhe próximo checkpoint e calcula direção no referencial atual da c�
   close(guidance({ ...state, heading: 2 * Math.PI - 0.1 }, route.checkpoints)!.angle, 0.1 * 180 / Math.PI);
 });
 test('avança apenas dentro da tolerância e na ordem; não pula checkpoint', () => {
-  let state = reduce(initialNavigation('MAT-001'), { type: 'calibrate', pose: origin });
+  let state = reduce(initialNavigation('SF01001A'), { type: 'calibrate', pose: origin });
   state = reduce(state, { type: 'pose', pose: pose(0, 1.5), checkpoints: route.checkpoints });
-  state = reduce(state, { type: 'pose', pose: pose(0, 3 - CHECKPOINT_TOLERANCE - 0.01), checkpoints: route.checkpoints });
+  state = reduce(state, { type: 'pose', pose: pose(0, 2 - CHECKPOINT_TOLERANCE - 0.01), checkpoints: route.checkpoints });
   assert.equal(state.nextIndex, 1);
-  state = reduce(state, { type: 'pose', pose: pose(0, 3 - CHECKPOINT_TOLERANCE + 0.01), checkpoints: route.checkpoints });
+  state = reduce(state, { type: 'pose', pose: pose(0, 2 - CHECKPOINT_TOLERANCE + 0.01), checkpoints: route.checkpoints });
   assert.equal(state.nextIndex, 2);
-  assert.equal(guidance(state, route.checkpoints)!.checkpoint.label, 'Corredor A');
-  state = reduce(state, { type: 'pose', pose: pose(0, 3), checkpoints: route.checkpoints });
+  assert.equal(guidance(state, route.checkpoints)!.checkpoint.label, 'SF01001A');
+  state = reduce(state, { type: 'pose', pose: pose(0, 2), checkpoints: route.checkpoints });
   assert.equal(state.nextIndex, 2);
 });
-test('percorre todos os checkpoints dos três materiais sem confirmar chegada automaticamente', () => {
-  for (const code of ['MAT-001', 'MAT-002', 'MAT-003']) {
+test('percorre todos os checkpoints dos quatro endereços sem confirmar chegada automaticamente', () => {
+  for (const code of ['SF01001A', 'SF01014A', 'SF01009B', 'SF01012B']) {
     let session = materialSessionReducer(initialMaterialSession(), { type: 'select', code });
     session = materialSessionReducer(session, { type: 'recognize-start' });
     const plan = materialRoute(session)!;
@@ -56,7 +56,7 @@ test('percorre todos os checkpoints dos três materiais sem confirmar chegada au
     assert.equal(state.nextIndex, plan.checkpoints.length);
     assert.equal(guidance(state, plan.checkpoints), null);
     assert.equal(session.arrivedAt, null);
-    const wrong = code === 'MAT-001' ? 'RACK-B' : 'RACK-A';
+    const wrong = code === 'SF01001A' ? 'SF01009B' : 'SF01001A';
     session = materialSessionReducer(session, { type: 'recognize-rack', rack: wrong, at: 1 });
     assert.equal(session.arrivedAt, null);
     session = materialSessionReducer(completeRoute(session), { type: 'recognize-rack', rack: session.item.location.id, at: 2 });
@@ -64,7 +64,7 @@ test('percorre todos os checkpoints dos três materiais sem confirmar chegada au
   }
 });
 test('perda de tracking, pose inválida e salto suspendem a orientação e exigem novo START', () => {
-  const calibrated = reduce(initialNavigation('MAT-001'), { type: 'calibrate', pose: origin });
+  const calibrated = reduce(initialNavigation('SF01001A'), { type: 'calibrate', pose: origin });
   const lost = reduce(calibrated, { type: 'lost' });
   assert.equal(lost.origin, null);
   assert.equal(lost.position, null);
@@ -79,8 +79,8 @@ test('perda de tracking, pose inválida e salto suspendem a orientação e exige
   assert.equal(reduce(calibrated, { type: 'calibrate', pose: pose(1, 1) }), calibrated);
 });
 test('troca de material reinicia origem, posição e checkpoint; mesmo material preserva navegação', () => {
-  let state = reduce(initialNavigation('MAT-001'), { type: 'calibrate', pose: origin });
+  let state = reduce(initialNavigation('SF01001A'), { type: 'calibrate', pose: origin });
   state = reduce(state, { type: 'pose', pose: pose(0, 1.5), checkpoints: route.checkpoints });
-  assert.equal(reduce(state, { type: 'select', code: 'MAT-001' }), state);
-  assert.deepEqual(reduce(state, { type: 'select', code: 'MAT-002' }), initialNavigation('MAT-002'));
+  assert.equal(reduce(state, { type: 'select', code: 'SF01001A' }), state);
+  assert.deepEqual(reduce(state, { type: 'select', code: 'SF01009B' }), initialNavigation('SF01009B'));
 });

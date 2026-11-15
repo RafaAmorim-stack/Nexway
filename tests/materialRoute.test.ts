@@ -1,3 +1,4 @@
+import { destinations } from '../src/navigation/warehouseLayout';
 import { completeRoute } from './helpers/materialJourney';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,17 +12,16 @@ test('rota só é liberada após START para cada material e termina no acesso do
     assert.equal(materialRoute(selected), null);
     const route = materialRoute(reduce(selected, { type: 'recognize-start' }))!;
     assert.deepEqual(route.points[0], warehouse.entrance);
-    assert.deepEqual(route.points.at(-1), warehouse.racks.find(rack => rack.id === item.location.id)!.approach);
-    const labels = ['START', 'Corredor principal', 'Corredor ' + item.location.id.slice(-1)];
-    if (item.location.id === 'RACK-A') labels.push('Acesso à estante A');
-    labels.push(item.location.id);
-    assert.deepEqual(route.checkpoints.map(checkpoint => checkpoint.label), labels);
-    assert.match(route.nextInstruction, /Siga em frente até Corredor principal/);
+    assert.deepEqual(route.points.at(-1), destinations.find(d => d.id === item.code)!.accessPoint);
+    assert.equal(route.checkpoints[0]!.label, 'START');
+    assert.equal(route.checkpoints.at(-1)!.label, item.code);
+    assert.ok(route.checkpoints.length >= 3);
+    assert.match(route.nextInstruction, /Siga em frente até Checkpoint 1/);
     assert.match(route.nextInstruction, new RegExp(item.location.id));
     for (let i = 0; i < route.points.length; i++) {
       const point = route.points[i]!;
       assert.ok(isWalkable(point));
-      assert.ok(point.x > 0 && point.x < warehouse.columns - 1 && point.y > 0 && point.y < warehouse.rows - 1);
+      assert.ok(point.x >= warehouse.bounds.minX && point.x <= warehouse.bounds.maxX && point.y >= warehouse.bounds.minY && point.y <= warehouse.bounds.maxY);
       assert.ok(!warehouse.racks.some(rack => point.x >= rack.x && point.x < rack.x + rack.width && point.y >= rack.y && point.y < rack.y + rack.height));
       if (i > 0) assert.equal(Math.abs(point.x - route.points[i - 1]!.x) + Math.abs(point.y - route.points[i - 1]!.y), 1);
     }
@@ -42,13 +42,13 @@ test('rota só é liberada após START para cada material e termina no acesso do
 test('troca de material exige novo START e recalcula rota e instrução para o novo destino', () => {
   let session = reduce(initialMaterialSession(), { type: 'recognize-start' });
   const original = materialRoute(session)!;
-  for (const code of ['MAT-002', 'MAT-003', 'MAT-001']) {
+  for (const code of ['SF01009B', 'SF01012B', 'SF01001A']) {
     session = reduce(session, { type: 'select', code });
     assert.equal(materialRoute(session), null);
     session = reduce(session, { type: 'recognize-start' });
     const route = materialRoute(session)!;
     assert.equal(route.checkpoints.at(-1)!.label, session.item.location.id);
-    if (code === 'MAT-002') assert.notDeepEqual(route.points, original.points);
+    if (code === 'SF01009B') assert.notDeepEqual(route.points, original.points);
     assert.equal(session.arrivedAt, null);
   }
 });
@@ -56,11 +56,11 @@ test('calcular rota e reconhecer rack errado não concluem; rack correto valida 
   const started = reduce(initialMaterialSession(), { type: 'recognize-start' });
   const route = materialRoute(started)!;
   assert.equal(started.arrivedAt, null);
-  const wrong = reduce(started, { type: 'recognize-rack', rack: 'RACK-B', at: 10 });
+  const wrong = reduce(started, { type: 'recognize-rack', rack: 'SF01009B', at: 10 });
   assert.equal(wrong.arrivedAt, null);
   assert.deepEqual(materialRoute(wrong), route);
-  const arrived = reduce(completeRoute(wrong), { type: 'recognize-rack', rack: 'RACK-A', at: 20 });
+  const arrived = reduce(completeRoute(wrong), { type: 'recognize-rack', rack: 'SF01001A', at: 20 });
   assert.equal(arrived.arrivedAt, 20);
   assert.deepEqual(materialRoute(arrived)!.points, route.points);
-  assert.equal(materialRoute(arrived)!.nextInstruction, 'Chegada validada pelo marcador RACK-A.');
+  assert.equal(materialRoute(arrived)!.nextInstruction, 'Chegada validada pelo marcador SF01001A.');
 });

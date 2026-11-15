@@ -26,7 +26,7 @@ A [divisão técnica](NexWay_Divisao_Desenvolvimento_Leonardo_Rafael.pdf) comple
 
 ## Visão geral, problema e público-alvo
 
-O NexWay permite selecionar um material de um catálogo local, consultar seu rack na planta e receber direção e distância sobre a câmera. START estabelece a origem e a orientação da navegação; o rack correto confirma a chegada depois dos checkpoints.
+O NexWay permite selecionar um material de um catálogo local, consultar seu endereço na planta e receber direção e distância sobre a câmera. START estabelece a origem e a orientação da navegação; o endereço correto confirma a chegada depois dos checkpoints.
 
 Conhecer o código de uma posição não significa saber chegar até ela. A proposta atende operadores pouco familiarizados com o layout e estudantes voluntários na avaliação planejada. A redução de tempo e erros em comparação com uma planta 2D é uma hipótese: o experimento com participantes ainda não foi executado.
 
@@ -41,7 +41,7 @@ Objetivos técnicos implementados:
 - calcular rota por busca em largura, evitando os bloqueios do mapa;
 - acompanhar pose X/Z, direção, distância e checkpoints em ordem;
 - liberar validação do rack somente depois do último checkpoint;
-- registrar chegada uma única vez, sem aceitar rack incorreto;
+- registrar chegada uma única vez, sem aceitar endereço incorreto;
 - verificar tipos e regras por testes automatizados.
 
 A avaliação com participantes e a validação física específica da correção atual permanecem pendentes.
@@ -50,15 +50,15 @@ A avaliação com participantes e a validação física específica da correçã
 
 | Identificador | Funcionalidade | Descrição | Status |
 |---|---|---|---|
-| RF01 | Buscar e selecionar material | Catálogo local com três materiais; busca por código ou descrição | Implementado |
-| RF02 | Identificar destino | Associação com RACK-A, RACK-B ou RACK-C | Implementado |
-| RF03 | Consultar planta | Mostra layout e rack destino | Implementado |
+| RF01 | Buscar e selecionar material | Catálogo local com quatro endereços reais; busca por código ou descrição | Implementado |
+| RF02 | Identificar destino | SF01001A, SF01014A, SF01009B e SF01012B | Implementado |
+| RF03 | Consultar planta | Mostra A/B paralelas e módulo/endereço destino | Implementado |
 | RF04 | Simular percurso | Animação na planta, independente da câmera | Implementado |
-| RF05 | Reconhecer START | START-01 estabelece origem e direção | Implementado |
-| RF06 | Navegar por checkpoints | Grade 15 × 13; avanço sequencial dentro da tolerância | Implementado e testado |
+| RF05 | Reconhecer START | START_HUAWEI no chão estabelece origem e direção | Implementado |
+| RF06 | Navegar por checkpoints | Grade de 1 m; avanço sequencial dentro da tolerância | Implementado e testado |
 | RF07 | Orientação relativa | Sobreposição 2D com direção, distância e X/Z | Implementado |
-| RF08 | Validar chegada | Rack correto somente após todos os checkpoints; registro único | Corrigido e testado; validação física específica pendente |
-| RF09 | Rejeitar rack incorreto | Exibe esperado e reconhecido, sem chegada | Testado; validação física específica pendente |
+| RF08 | Validar chegada | Endereço correto somente após todos os checkpoints; registro único | Corrigido e testado; validação física específica pendente |
+| RF09 | Rejeitar endereço incorreto | Exibe esperado e reconhecido, sem chegada | Testado; validação física específica pendente |
 | RF10 | Suspender e recalibrar | Tracking limitado, pose inválida ou salto reiniciam a navegação | Testado; validação física específica pendente |
 | RF11 | Destacar setor e prateleira na câmera | Indicação dentro do rack | Planejado |
 | RF12 | Orientação 3D | Seta ou mapa 3D | Planejado |
@@ -124,13 +124,13 @@ Instale Git e Node 22. Para compilação local Android, configure Android Studio
 ```powershell
 git clone https://github.com/RafaAmorim-stack/Nexway.git
 cd Nexway
-git switch docs/organizacao-disciplina
+git switch feat/huawei-warehouse-layout
 npm ci
 npm run typecheck
 npm test
 ```
 
-O commit funcional `7acefc534bc52615189aa3b9bb4f6e8ae9160ad8` exige todos os checkpoints antes da validação do rack. Nesta revisão documental, typecheck passou e os **29/29 testes** passaram. A cobertura inclui chegada antecipada, chegada após o percurso, rack incorreto, ordem dos checkpoints e registro único.
+A base desta implementação é `5196b3c1eab3a3648931f517bdd8d0c888166168` (main), descendente de `21adbb7` e da correção `7acefc5`. Os 29 testes anteriores foram preservados/adaptados, com testes adicionais do layout Huawei. A proteção contra chegada antecipada permanece no reducer.
 
 `npm run verify` reúne tipos e testes. `npm run export:web`, `npm run export:ios` e `npm run export:android` verificam bundles; não equivalem a APK/IPA nem a teste físico.
 
@@ -156,22 +156,41 @@ Alternativa pelo perfil development de [eas.json](eas.json), com developmentClie
 
 ```powershell
 npx eas-cli@latest login
-npx eas-cli@latest init
 npm run build:android
 ```
 
-No init, vincule a conta/projeto Expo da equipe e revise as alterações de configuração. Instale o APK disponibilizado pelo EAS e execute `npm start`. Não versione credenciais. O perfil também prevê iOS, mas não há validação em iPhone.
+O app.json já está vinculado ao projeto EAS da equipe; preserve esse vínculo. Instale o APK disponibilizado pelo EAS e execute `npm start`. Não versione credenciais. O perfil também prevê iOS, mas não há validação em iPhone.
 
 ## Marcadores e utilização
 
-Imprima [assets/markers/print.html](assets/markers/print.html) em tamanho real. Cada marcador deve medir **20 × 20 cm**; confirme com régua. São imagens de tracking, não QR codes.
+O **ambiente Huawei de validação técnica** usa as etiquetas fotografadas como image targets do ViroReact. O app reconhece a imagem completa; não decodifica o QR. Não utilize o conjunto antigo de impressão A/B/C.
 
-1. Selecione o material em Armazém virtual e confira o rack destino.
-2. Abra Câmera AR e autorize a câmera.
-3. Reconheça START-01 no ponto demarcado, olhando para o corredor principal. A pose da câmera define origem e frente do mapa.
-4. Percorra os checkpoints em ordem. A escala de teste é 1 m/célula, com tolerância de 0,45 m.
-5. Após o último checkpoint, reconheça o rack destino. Antes disso, o rack correto não registra chegada; rack incorreto também não conclui.
-6. A chegada é registrada uma única vez. Troca de material, saída da câmera ou perda de navegação exigem nova calibração e percurso.
+![Layout Huawei](docs/images/huawei/layout-huawei.png)
+
+- Escala medida: **1 quadrado = 1 metro**; START no chão em **(6,0)**.
+- A: **12 × 1 m**, x=0..12 e Z=3..4. B: **12 × 1 m**, x=0..12 e Z=6..7.
+- Quatro módulos de 3 m por prateleira; START a 3 m da face da A; corredor livre de 2 m entre A/B.
+- Fonte única: [warehouseLayout.ts](src/navigation/warehouseLayout.ts). No código 2D, y corresponde a Z físico, crescendo para o fundo.
+
+| Endereço | Prateleira / módulo | Marker (X,Z) | Access point (X,Z) |
+|---|---|---|---|
+| SF01001A | A / 1 | (1,5; 3) | (1; 2) |
+| SF01014A | A / 3 | (7,5; 3) | (7; 2) |
+| SF01009B | B / 1 | (1,5; 6) | (1; 5) |
+| SF01012B | B / 3 | (7,5; 6) | (7; 5) |
+
+Centros de módulo são referências visuais, não medições individuais da etiqueta. O BFS usa células inteiras e acessos livres. A bloqueia x=0..11/Z=3; B bloqueia x=0..11/Z=6. Para B, o caminho passa pela lateral livre de A e entra no corredor; não atravessa o estoque. As margens laterais da grade são espaço lógico de circulação, não paredes medidas.
+
+1. Selecione um dos quatro endereços; nomes de materiais não foram inventados.
+2. Abra Câmera AR e permita a câmera.
+3. Posicione-se no START, voltado para A. Incline o telefone para enquadrar o marcador no piso sem alterar a direção horizontal. A origem é a pose da câmera, não uma localização absoluta obtida da etiqueta.
+4. Siga os checkpoints em ordem (tolerância de 0,45 m). O aplicativo mostra direção, distância e X/Z.
+5. Ao concluir o percurso, reconheça a etiqueta exata. SF01009B não valida SF01012B, mesmo sendo a mesma prateleira. Reconhecimento correto antecipado não conclui.
+6. Tracking perdido exige retorno ao START e reinício do percurso. Chegada validada registra horário apenas uma vez.
+
+Os cinco targets reais estão em [assets/markers/huawei](assets/markers/huawei); as fotos originais e o esboço em [docs/images/huawei](docs/images/huawei). Nenhuma imagem está faltando. Recorte/retificação reproduzível em [scripts/prepare-huawei-targets.py](scripts/prepare-huawei-targets.py); nenhum QR foi redesenhado.
+
+**Antes do teste físico:** medir a largura externa de cada etiqueta/START e ajustar [huaweiTargets.ts](src/ar/huaweiTargets.ts). O valor 0,20 m é nominal, não uma medida extraída das fotos. A escala confirmada do mapa permanece 1 m/célula. Seguir o [roteiro Xiaomi](docs/START-AR.md).
 
 ![Fluxo técnico da RA](docs/diagrams/fluxo-ra.png)
 
@@ -189,11 +208,11 @@ A rastreabilidade funcional deve associar no mesmo registro:
 - Metro iniciado a partir dessa mesma working tree, com commit e terminal registrados;
 - aparelho, versão Android e validação física dos cenários da versão corrigida.
 
-Nesta revisão foram executados tipos e testes; não houve nova execução Metro, instalação ou validação física. O relato histórico da equipe não comprova por si só essa associação completa para a versão atual.
+Esta implementação deve ser verificada por tipos, testes e export Android; esses resultados não equivalem a instalação ou validação física. O relato histórico da equipe não comprova por si só essa associação completa para a versão atual.
 
 ## Limitações atuais
 
-- Catálogo fictício de três materiais e mapa fixo 15 × 13; escala e tolerância precisam de ajuste ao espaço real.
+- Quatro posições reais, sem nomes de materiais. Mapa métrico confirmado; tolerância e reconhecimento dos recortes ainda precisam de validação no aparelho.
 - Pose sujeita a deriva, dependente de alinhamento no START, iluminação e marcadores.
 - A rota evita apenas bloqueios cadastrados; não detecta obstáculos novos.
 - Sobreposição 2D, sem seta 3D, GPS indoor, VPS ou Cloud Anchors.
@@ -203,8 +222,10 @@ Nesta revisão foram executados tipos e testes; não houve nova execução Metro
 
 ## Documentação adicional
 
+- [Relatório da implementação Huawei](docs/HUAWEI_IMPLEMENTATION.md), com coordenadas, rotas, arquivos e verificações.
+
 - [Desenvolvimento](docs/DEVELOPMENT.md) e [revisão documental](docs/REVISAO_MERGE.md).
-- [Roteiro histórico START-AR](docs/START-AR.md), a usar junto das condições atuais deste README.
+- [Roteiro Huawei START-AR](docs/START-AR.md), a usar junto das condições atuais deste README.
 - [Diagramas](docs/diagrams/): arquitetura, caso de uso, navegação e fluxo RA em MMD, SVG e PNG.
 - [Capturas](docs/images/): oito imagens de 25/10/2026; não comprovam a correção posterior.
 - [Artigo acadêmico V5](docs/documents/NexWay_Artigo_Final_V5.docx) e [índice documental](docs/documents/LEIA-ME.txt), com nota sobre seu recorte histórico.

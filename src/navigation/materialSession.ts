@@ -33,8 +33,8 @@ export function materialSessionReducer(state: MaterialSession, action: MaterialA
 }
 export function materialStatus(state: MaterialSession) {
   return {
-    status: state.arrivedAt !== null ? 'Estante correta reconhecida' : state.recognizedRack ? 'Estante incorreta' : canValidateRack(state) ? 'Checkpoints concluídos · Aguardando marcador da estante destino' : state.startRecognized ? 'START reconhecido · Percorra os checkpoints em ordem' : 'Aguardando marcador START',
-    material: 'Material: ' + state.item.code + ' · ' + state.item.description,
+    status: state.arrivedAt !== null ? 'Chegada validada' : state.recognizedRack ? 'Endereço incorreto' : canValidateRack(state) ? 'Destino alcançado · Valide a posição ' + state.item.code : state.startRecognized ? 'START reconhecido · Percorra os checkpoints em ordem' : 'Aguardando marcador START',
+    material: 'Posição: ' + state.item.code + ' · ' + state.item.description,
     destination: 'Destino: ' + state.item.location.id,
   };
 }

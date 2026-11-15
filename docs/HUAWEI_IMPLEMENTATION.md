@@ -91,3 +91,77 @@ Alterados:
 Seguir [START-AR.md](START-AR.md), com preparação da branch/Metro, largura das etiquetas, posicionamento no START, percurso dos quatro endereços, etiqueta errada da mesma prateleira, reconhecimento correto antecipado, chegada única, tracking perdido e recalibração.
 
 A implementação preserva START → checkpoints em ordem → endereço correto. Não altera arquitetura nem adiciona localização indoor. Export Android não é APK. Não se afirmam precisão, resultados com participantes ou ganhos de produtividade. O SHA final e a publicação da branch devem ser conferidos no histórico Git; este relatório integra o próprio commit.
+
+## Validação física no ambiente Huawei — 15/11/2026
+
+A implementação do layout Huawei foi validada fisicamente em um dispositivo Xiaomi no ambiente real de armazenagem utilizado pela equipe.
+
+A configuração avaliada utilizou:
+
+- marcador START posicionado no piso;
+- escala do mapa de 1 metro por célula;
+- prateleiras A e B do ambiente físico;
+- quatro endereços cadastrados:
+  - SF01001A;
+  - SF01014A;
+  - SF01009B;
+  - SF01012B;
+- reconhecimento dos marcadores por imagem com ViroReact;
+- orientação relativa por X/Z, direção e distância;
+- cálculo de rota por BFS.
+
+Durante a validação foram verificados com sucesso:
+
+- reconhecimento do START;
+- reconhecimento dos quatro destinos físicos;
+- navegação para posições da prateleira A;
+- navegação para posições da prateleira B;
+- contorno da prateleira A para acesso à B;
+- bloqueio de validação quando o endereço correto é reconhecido antes da conclusão dos checkpoints;
+- rejeição de endereço incorreto;
+- validação do endereço correto após a conclusão dos checkpoints;
+- registro único da chegada;
+- perda de tracking e necessidade de nova calibração no START.
+
+As verificações automatizadas da implementação permanecem com 39 testes aprovados, além de typecheck e exportação Android aprovados.
+
+Esta etapa constitui uma validação técnica da prova de conceito em ambiente real de armazenagem. Não corresponde ao experimento comparativo com participantes e não permite concluir redução de tempo, redução de erros, ganho de produtividade ou precisão métrica do sistema.
+
+Os image targets foram utilizados com `physicalWidth` nominal de 0,20 m durante essa validação. A largura pode ser aferida posteriormente para refinamento da calibração.
+
+## Validação física no ambiente Huawei — 15/11/2026
+
+A implementação do layout Huawei foi validada fisicamente em um dispositivo Xiaomi no ambiente real de armazenagem utilizado pela equipe.
+
+A configuração avaliada utilizou:
+
+- marcador START posicionado no piso;
+- escala do mapa de 1 metro por célula;
+- prateleiras A e B do ambiente físico;
+- quatro endereços cadastrados:
+  - SF01001A;
+  - SF01014A;
+  - SF01009B;
+  - SF01012B;
+- reconhecimento dos marcadores por imagem com ViroReact;
+- orientação relativa por X/Z, direção e distância;
+- cálculo de rota por BFS.
+
+Durante a validação foram verificados com sucesso:
+
+- reconhecimento do START;
+- reconhecimento dos quatro destinos físicos;
+- navegação para posições da prateleira A;
+- navegação para posições da prateleira B;
+- contorno da prateleira A para acesso à B;
+- bloqueio de validação quando o endereço correto é reconhecido antes da conclusão dos checkpoints;
+- rejeição de endereço incorreto;
+- validação do endereço correto após a conclusão dos checkpoints;
+- registro único da chegada;
+- perda de tracking e necessidade de nova calibração no START.
+
+As verificações automatizadas da implementação permanecem com 39 testes aprovados, além de typecheck e exportação Android aprovados.
+
+Esta etapa constitui uma validação técnica da prova de conceito em ambiente real de armazenagem. Não corresponde ao experimento comparativo com participantes e não permite concluir redução de tempo, redução de erros, ganho de produtividade ou precisão métrica do sistema.
+
+Os image targets foram utilizados com `physicalWidth` nominal de 0,20 m durante essa validação. A largura pode ser aferida posteriormente para refinamento da calibração.
